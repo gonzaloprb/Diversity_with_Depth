@@ -10,7 +10,8 @@ the script does:  1) Generic richness profile
                   2) NMDS
                   3) beta.pair per depth
                   4) betadisper (HERE THRE'S A PROBLEM)
-                  5) Mantel tests
+                  5) Mantel tests.
+                  
 you'll see that each analysis re-starts from the PA_df to make it easier for you. 
 
 I am confused with the betadisper per different depth. 
