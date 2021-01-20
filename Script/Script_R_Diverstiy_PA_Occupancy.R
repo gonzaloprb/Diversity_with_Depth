@@ -4,7 +4,7 @@
 # Install.packages
 require(scatterplot3d); require(reshape); require (reshape2); require (data.table); require(RColorBrewer); require(dplyr); require (tidyr); require (plyr); require (ggplot2); require (vegan); require (goeveg);   require  (stats); require (dynRB); require (matrixStats); require(plyr); require (stringr);require (reshape2); require(gridExtra)
 require (betapart); require (car); require (MASS); 
-require (ggpubr); require (cowplot); require (patchwork) 
+require (ggpubr); require (cowplot); require (patchwork)  
 
 
 # Mid-domain effect

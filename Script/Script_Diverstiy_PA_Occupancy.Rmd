@@ -33,7 +33,7 @@ knitr::opts_chunk$set(echo = TRUE)
 setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/Diverstiy with Depth/Data")
 PA_df <- read.csv(file = "photoquad_sppcount_DEEPHOPE_genus_form.csv", header = T, dec = ".", sep = ",", row.names = 1)
 
-PA_df$Island <- gsub("Mangareva", "Gambier", PA_df$Island)
+PA_df$Island <- gsub("Mangareva", "Gambier", PA_df$Island) 
 PA_df <- subset (PA_df,Coral_genus!="NA_Coral")
 
 ```
