@@ -1,18 +1,27 @@
 # Diverstiy-with-Depth
 
-There is a Rmarkdown and a R script. I did not know which format you prefered. 
+Hello Seb and Valeriano
 
-I am confused with the betadisper per depth. 
+There is a Rmarkdown and a R script. I did not know which format you prefer to work. 
 
-I can make it for all depths together, considering groups as different depths. I obtain (1) the average distance to median ("b-dissimilarity" per depth ?), (2) anova and (3)permutest pair-wise differences between (depths)
+From the initial database: PA_df 
 
-Working with all depths, either I work with the mother matrix ## 1 ##  or straight from beta.pair.abund matrix ## 2 ## 
+the script does:  1) Generic richness profile
+                  2) NMDS
+                  3) beta.pair per depth
+                  4) betadisper (HERE THRE'S A PROBLEM)
+                  5) Mantel tests
+you'll see that each analysis re-starts from the PA_df to make it easier for you. 
 
-However, making a betadisper per depth and check differences between islands is not possible. I need replicates. 
+I am confused with the betadisper per different depth. 
 
-- Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency which is F = nb Quadrats with genus / Total nb of quadrats
+I can make it work for all depths and sites together considering groups as different depths. I obtain (1) the average distance to median ("b-dissimilarity" per depth ?), (2) anova results and (3) permutest pair-wise differences between (depths)
 
-- Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency. 
+Still working with all depths, I can either work with the mother matrix ## 1 ##  or straight from beta.pair.abund matrix ## 2 ## 
 
+However, the PROBLEM IS making a betadisper per depth and check differences between islands. I think it is not possible as I need replicates... I obtain only 0 
 
-For ease, you can check the word generated from the Rmarkdown with results of the commands without running it, and the error in betadisper
+- Valeriano: you said using all quadrats per depth. However, it's impossible if we work with the index occupancy-frequency which is F = nb Quadrats with genus / Total nb of quadrats. 
+In other words, we are pulling all quadrats so it is not possible to work from the quadrats. 
+
+For ease, you can check the word generated from the Rmarkdown with results of the commands without running them.
