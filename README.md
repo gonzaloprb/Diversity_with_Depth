@@ -9,9 +9,10 @@ I can make it for all depths together, considering groups as different depths. I
 Working with all depths, either I work with the mother matrix ## 1 ##  or straight from beta.pair.abund matrix ## 2 ## 
 
 However, making a betadisper per depth and check differences between islands is not possible. I need replicates. 
-<<<<<<< HEAD
+
 - Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency which is F = nb Quadrats with genus / Total nb of quadrats
-=======
+
 - Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency. 
 
 
+For ease, you can check the word generated from the Rmarkdown with results of the commands without running it, and the error in betadisper
