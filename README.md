@@ -20,9 +20,9 @@ I can make it work for all depths and sites together considering groups as diffe
 
 Still working with all depths, I can either work with the mother matrix ## 1 ##  or straight from beta.pair.abund matrix ## 2 ## 
 
-However, the PROBLEM IS making a betadisper per depth and check differences between islands. I think it is not possible as I need replicates... I obtain only 0 
+However, the PROBLEM is making a betadisper per depth and check differences between islands. I think it is not possible as I need replicates... I obtain only 0 
 
 - Valeriano: you said using all quadrats per depth. However, it's impossible if we work with the index occupancy-frequency which is F = nb Quadrats with genus / Total nb of quadrats. 
 In other words, we are pulling all quadrats so it is not possible to work from the quadrats. 
 
-For ease, you can check the word generated from the Rmarkdown with results of the commands without running them.
+For ease, you can check the word generated from the Rmarkdown with the outputs of the commands without running them.
