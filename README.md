@@ -26,3 +26,7 @@ However, the PROBLEM is making a betadisper per depth and check differences betw
 In other words, we are pulling all quadrats so it is not possible to work from the quadrats. 
 
 For ease, you can check the word generated from the Rmarkdown with the outputs of the commands without running them.
+
+
+Access to Google slides - Structure and figures: https://docs.google.com/presentation/d/1FsDkf9B-vjMtwWeAG_22xq8YWruY4l4PWJ26cNqRklk/edit#slide=id.gb4fd1fd75b_0_21
+Access to Google docs - Manuscript: https://docs.google.com/document/d/176O9EbcAjE3lBhTg7x5N5Ij_XRUXlvMimNIZbhNw9mk/edit
