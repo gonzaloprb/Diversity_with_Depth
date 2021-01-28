@@ -27,5 +27,5 @@ However, the PROBLEM is making a BETADISPER PER DEPTH and check differences betw
 
 You can work on any of the database (PA or Cover) and a single depth. If it works, I will do it as your solution for the rest. 
 
-Access to Google slides - Structure and figures: https://docs.google.com/presentation/d/1FsDkf9B-vjMtwWeAG_22xq8YWruY4l4PWJ26cNqRklk/edit#slide=id.gb4fd1fd75b_0_21
+Access to Google slides - Structure and figures of the meeting: https://docs.google.com/presentation/d/1FsDkf9B-vjMtwWeAG_22xq8YWruY4l4PWJ26cNqRklk/edit#slide=id.gb4fd1fd75b_0_21
 Access to Google docs - Manuscript: https://docs.google.com/document/d/176O9EbcAjE3lBhTg7x5N5Ij_XRUXlvMimNIZbhNw9mk/edit
