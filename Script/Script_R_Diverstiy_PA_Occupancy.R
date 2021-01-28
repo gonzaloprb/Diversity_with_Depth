@@ -17,7 +17,7 @@ require (geodist)
 
 # rm (list = ls()) 
 # Set working directory etc.
-setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/Diverstiy with Depth/Data")
+setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Data")
 PA_df <- read.csv(file = "photoquad_sppcount_DEEPHOPE_genus_form.csv", header = T, dec = ".", sep = ",", row.names = 1)
 
 PA_df$Island <- gsub("Mangareva", "Gambier", PA_df$Island)
@@ -197,7 +197,7 @@ coral.matrices_Depth_2 <- beta.pair.abund(Depth_2_Beta, index.family = "bray")
 mean (coral.matrices_Depth_2$beta.bray)
 
 ### For 40m  #View(Depth_3) - Necessary rows as sites and columns as species (genera)
-Depth_3 <- filter (cast_depth, Depth == 30)
+Depth_3 <- filter (cast_depth, Depth == 40)
 rownames (Depth_3) <- Depth_3$Coral_genus
 Depth_3 <- subset (Depth_3, select = - c(Depth, Coral_genus))
 
@@ -241,9 +241,53 @@ coral.matrices_Depth_6 <- beta.pair.abund(Depth_6_Beta, index.family = "bray")
 mean (coral.matrices_Depth_6$beta.bray)
 
 
-# All remaining depths
+## Mantel tests with distance - per depth
 
-## Betadisper 
+# I can also plot bray-distance according to vertical depth distance measuring bray-distance per site and not per depth
+
+
+# Mantel tests 
+# It needs Beta-dissimilarity matrix and matrix distance
+
+library (geodist)
+
+Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
+Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
+
+Locations$ID<- with(Locations, paste0(Island, sep = "_", Site))
+
+# Keep only same ID as coral data 
+unique (melt_depth$ID)
+Locations <- Locations[Locations$ID %in% melt_depth$ID, ]
+Locations <- Locations[order(Locations[,'ID']), ]
+
+rownames (Locations) <- Locations$ID
+Locations <- subset (Locations, select =  c(Latitude, Longitude))
+
+dm <- geodist (Locations, measure = "geodesic", paired = T) /1000
+
+dm <- as.data.frame(dm)
+rownames (dm) <-  rownames (Locations)
+names (dm) <- rownames (Locations) 
+
+
+# Transform to object of class dist
+dm <- dist (dm)
+
+##### Make the mantel test ##### 
+# For Depth 1 - 6m 
+mantel(coral.matrices_Depth_1$beta.bray, dm) # 6m
+mantel(coral.matrices_Depth_2$beta.bray, dm) # 20m
+mantel(coral.matrices_Depth_3$beta.bray, dm) # 40m # Significance close to 0, it means no correlation
+mantel(coral.matrices_Depth_4$beta.bray, dm) # 60m # Significance distante to 0, it means correlation
+mantel(coral.matrices_Depth_5$beta.bray, dm) #90m # Significance close to 0, it means no correlation
+mantel(coral.matrices_Depth_6$beta.bray, dm) #120m # No significance
+
+
+
+
+### Betadisper 
 # Here is where I am confused...
 # I can make it for all depths together, considering groups as different depths. I obtain (1) the average distance to median ("b-dissimilarity" per depth ?), (2) anova and (3)permutest pair-wise differences between (depths)
 
@@ -381,49 +425,5 @@ mod2 <- betadisper (beta_Depth_2,groups, )
 
 str(beta_Depth_1)
 
-library (usedist)
-
-beta_Depth_1 <- dist_setNames(beta_Depth_1, paste0 ("6",sep = "_",rownames (Depth_1_Beta)))
-
-beta_Depth_2 <- dist_setNames(beta_Depth_2, paste0 ("20",sep = "_",rownames (Depth_2_Beta)))
 
 
-## Mantel tests with distance - per depth
-
-# I can also plot bray-distance according to vertical depth distance measuring bray-distance per site and not per depth
-
-
-# Mantel tests 
-# It needs Beta-dissimilarity matrix and matrix distance
-
-library (geodist)
-
-Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
-Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
-Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
-
-Locations$ID<- with(Locations, paste0(Island, sep = "_", Site))
-
-# Keep only same ID as coral data 
-unique (melt_depth$ID)
-Locations <- Locations[Locations$ID %in% melt_depth$ID, ]
-Locations <- Locations[order(Locations[,'ID']), ]
-
-rownames (Locations) <- Locations$ID
-Locations <- subset (Locations, select =  c(Latitude, Longitude))
-
-dm <- geodist (Locations, measure = "geodesic", paired = T) /1000
-
-dm <- as.data.frame(dm)
-rownames (dm) <-  rownames (Locations)
-names (dm) <- rownames (Locations) 
-
-# Transform to object of class dist
-dm <- dist (dm)
-
-##### Make the mantel test ##### 
-# For Depth 1 - 6m 
-mantel(coral.matrices_Depth_1$beta.bray, dm)
-mantel(coral.matrices_Depth_2$beta.bray, dm)
-
-# and so on!

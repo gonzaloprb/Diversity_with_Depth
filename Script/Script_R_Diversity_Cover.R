@@ -231,6 +231,227 @@ mean (coral.matrices_Depth_6$beta.bray)
 
 
 
+## Mantel tests with distance - per depth
+
+library (usedist)
+
+beta_Depth_1 <- dist_setNames(beta_Depth_1, paste0 ("6",sep = "_",rownames (Depth_1_Beta)))
+
+beta_Depth_2 <- dist_setNames(beta_Depth_2, paste0 ("20",sep = "_",rownames (Depth_2_Beta)))
+
+
+# I can also plot bray-distance according to vertical depth distance measuring bray-distance per site and not per depth
+
+
+# Mantel tests 
+# It needs Beta-dissimilarity matrix and matrix distance
+
+library (geodist)
+
+Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
+Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
+
+Locations$ID<- with(Locations, paste0(Island, sep = "_", Site))
+
+# Keep only same ID as coral data 
+unique (melt_depth$ID)
+Locations <- Locations[Locations$ID %in% melt_depth$ID, ]
+Locations <- Locations[order(Locations[,'ID']), ]
+
+rownames (Locations) <- Locations$ID
+Locations <- subset (Locations, select =  c(Latitude, Longitude))
+
+dm <- geodist (Locations, measure = "geodesic", paired = T) /1000
+
+dm <- as.data.frame(dm)
+rownames (dm) <-  rownames (Locations)
+names (dm) <- rownames (Locations) 
+# Necessary to create a new for 120 m where in Moorea 1 and Tahiti 2 there aren's corals
+dm_120 <- dm
+
+# Transform to object of class dist
+dm <- dist (dm)
+
+##### Make the mantel test ##### 
+# For Depth 1 - 6m 
+mantel(coral.matrices_Depth_1$beta.bray, dm) # 6m , strong + correlation (significant)
+mantel(coral.matrices_Depth_2$beta.bray, dm) # 20m
+mantel(coral.matrices_Depth_3$beta.bray, dm) # 40m
+mantel(coral.matrices_Depth_4$beta.bray, dm) # 60m
+mantel(coral.matrices_Depth_5$beta.bray, dm) #90m
+
+# For 120m, Necessary to change the dimesnsion as I had to remove two sites (no corals at all)
+# Delete columns
+dm_120 <- subset(dm_120, select=-c(Moorea_1,Tahiti_2))
+# Delete rows
+row.names.remove <- c("Moorea_1", "Tahiti_2")
+dm_120 <- dm_120[!(row.names(dm_120) %in% row.names.remove), ]
+# Create distance object
+dm_120 <- dist (dm_120)
+mantel(coral.matrices_Depth_6$beta.bray, dm_120) #120m weak + correlation (significant), close to 0 indicates no correlation
+
+
+
+
+
+
+### Betadisper - Same confussion as for the PA
+# Here is where I am confused...
+# I can make it for all depths together, considering groups as different depths. I obtain (1) the average distance to median ("b-dissimilarity" per depth ?), (2) anova and (3)permutest pair-wise differences between (depths)
+
+# Working with all depths, either I work with the mother matrix ## 1 ##  or straight from beta.pair.abund matrix ## 2 ## 
+
+# However, for making a betadisper per depth and check differences between islands is not possible. I need replicates. 
+# - Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency. 
+
+# betadisper using all depths
+
+## 1 ## Betadisper from  the entire mother dissimilarity matrix...
+resume_df <- ddply(rndpts_df, ~ Island + Island_Site + Depth + Coral_genus ,
+                   function(x){c(Cover= sum(x$Cover)/30) })
+
+melt_temp = melt(resume_df, id=c("Island","Island_Site","Depth","Coral_genus"), measure.vars="Cover", na.rm=FALSE)
+
+cast_temp = dcast(melt_temp, Depth +  Island + Island_Site ~ Coral_genus, mean, add.missing = T)
+cast_temp[is.na(cast_temp)] <- 0
+
+cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Makatea","Gambier","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
+cast_database <- cast_temp
+
+# Preparing them for format matrix
+cast_temp$ID<- with(cast_temp, paste0(Depth, sep = "_",  Island,  sep = "_", Island_Site))
+rownames (cast_temp) <- cast_temp$ID
+
+cast_temp <- cast_temp[,-c(1,2,3,37)]
+
+# columns where sum is 0
+cast_temp <- cast_temp %>% select_if(colSums(.) != 0)
+# rows where sum is 0
+cast_temp <- cast_temp[rowSums(cast_temp[,])>0, ]
+
+# Distance of the entire dissimilarity matrix
+dis <- vegdist(cast_temp)
+# dis <- vegdist(cast_depth)
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",14))
+
+# Calculate multivariate dispersions
+mod <- betadisper(dis, groups)
+mod
+
+# Perform test
+anova(mod)
+# Permutation test for F
+permutest(mod, pairwise = TRUE, permutations = 99)
+# Tukey's Honest Significant Differences
+(mod.HSD <- TukeyHSD(mod))
+
+
+## 2 ##  Betadisper from the beta.pair bray distance matrix 
+
+resume_df <- ddply(rndpts_df, ~ Island + Island_Site + Depth + Coral_genus ,
+                   function(x){c(Cover= sum(x$Cover)/30) })
+
+melt_temp = melt(resume_df, id=c("Island","Island_Site","Depth","Coral_genus"), measure.vars="Cover", na.rm=FALSE)
+cast_temp = dcast(melt_temp, Depth +  Island + Island_Site ~ Coral_genus, mean, add.missing = T)
+cast_temp[is.na(cast_temp)] <- 0
+
+cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Makatea","Gambier","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
+
+cast_all_depth <- cast_temp
+cast_all_depth$ID<- with(cast_all_depth, paste0(Depth, sep = "_",  Island,  sep = "_", Island_Site))
+rownames (cast_all_depth) <- cast_all_depth$ID
+
+cast_all_depth <- cast_all_depth[,-c(1,2,3,37)]
+# columns where sum is 0
+cast_all_depth <- cast_all_depth %>% select_if(colSums(.) != 0)
+# rows where sum is 0
+cast_all_depth <- cast_all_depth[rowSums(cast_all_depth[,])>0, ]
+
+# Measure pair.abund
+coral.matrices_Depth <- beta.pair.abund(cast_all_depth, index.family = "bray")
+mean (coral.matrices_Depth$beta.bray)
+
+Beta_Depth <- dist (coral.matrices_Depth$beta.bray)
+
+mod_Depth <- betadisper (Beta_Depth,groups)
+mod_Depth
+
+# Perform test
+anova(mod_Depth)
+# Permutation test for F
+permutest(mod_Depth, pairwise = TRUE, permutations = 99)
+# Tukey's Honest Significant Differences
+(mod.HSD <- TukeyHSD(mod_Depth))
+
+
+
+
+
+# betadisper separate per depths !! ### THIS IS WHAT WE SAID IN THE MEETING ###
+# Trying to keep all quadrats as replicates -  I STILL CANNOT
+
+quadrat_df <- ddply(rndpts_df, ~ Island + Island_Site + Depth + Quadrat + Coral_genus ,
+                   function(x){c(Cover= sum(x$Cover)) })
+
+# Complete rows for all genera with Coral cover = 0 for all genera
+quadrat_df <- quadrat_df %>% complete( Island,Island_Site,Depth,Quadrat, Coral_genus,fill = list(Cover = 0))
+# Prepare columns and rows (by now keeping depth)
+melt_quadrat = melt(quadrat_df, id=c("Depth","Island", "Island_Site", "Quadrat","Coral_genus"), measure.vars="Cover", na.rm=FALSE)
+melt_quadrat$ID<- with(melt_quadrat, paste0(Island, sep = "_", Island_Site, sep = "_", Quadrat))
+cast_quadrat = dcast(melt_quadrat, Depth + Coral_genus ~ ID, mean, add.missing = T)
+
+### For Depth 6m  #View(Depth_1) - Necessary rows as sites and columns as species (genera)
+Depth_1 <- filter (cast_quadrat, Depth == 6)
+rownames (Depth_1) <- Depth_1$Coral_genus
+Depth_1 <- subset (Depth_1, select = - c(Depth, Coral_genus))
+
+Depth_1_Beta <- as.data.frame (t(Depth_1))
+#I think, I need to delete columns where all genus are 0 
+Depth_1_Beta <- Depth_1_Beta %>% select_if(colSums(.) != 0) 
+Depth_1_Beta <- Depth_1_Beta[rowSums(Depth_1_Beta[,])>0, ]
+
+coral.matrices_Depth_1 <- beta.pair.abund(Depth_1_Beta, index.family = "bray")
+
+beta_Depth_1 <- dist (coral.matrices_Depth_1$beta.bray)
+dis1 <- vegdist(Depth_1_Beta, method = "bray")
+
+# Only with Depth 1
+groups <- rownames (Depth_1_Beta)
+# groups <- c(rep("6M",16))
+
+mod1 <- betadisper (dis1,groups)
+# mod1 <- betadisper (beta_Depth_1,groups)
+mod1
+# Perform test
+anova(mod1)
+# Permutation test for F
+permutest(mod1, pairwise = TRUE, permutations = 99)
+
+## Tukey's Honest Significant Differences
+# (mod.HSD <- TukeyHSD(mod1))
+
+
+### Depth_2
+beta_Depth_2 <- dist (coral.matrices_Depth_2$beta.bray)
+dis2 <- vegdist(Depth_2_Beta)
+
+# Only with Depth 1
+groups <- rownames (Depth_2_Beta)
+
+mod2 <- betadisper (beta_Depth_2,groups)
+# mod2
+
+str(beta_Depth_1)
+
+
+
+
+
+
+
+
+# and so on!
 
 
 
