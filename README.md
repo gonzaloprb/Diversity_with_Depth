@@ -4,6 +4,8 @@ Hello Seb and Valeriano
 
 I need your help with the betadisper function per depth (I cannot make it work, and I don't know if even possible)
 
+Please can you check the scripts and let me know?
+
 the scripts do:   1) Generic richness and cover profile
                   2) NMDS
                   3) beta.pair per depth
@@ -11,7 +13,7 @@ the scripts do:   1) Generic richness and cover profile
                   5) betadisper (HERE THRE'S A PROBLEM)
                   
                   
-you'll see that each analysis re-starts from the original database to make it easier for you. 
+you'll see that each analysis re-starts from the original database to make it easier for you. You can go straight to betadisper section # 290
 
 I am confused with the betadisper per different depth. 
 
