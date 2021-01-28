@@ -287,7 +287,7 @@ mantel(coral.matrices_Depth_6$beta.bray, dm) #120m # No significance
 
 
 
-### Betadisper 
+### Betadisper (I NEED HELP HERE)
 # Here is where I am confused...
 # I can make it for all depths together, considering groups as different depths. I obtain (1) the average distance to median ("b-dissimilarity" per depth ?), (2) anova and (3)permutest pair-wise differences between (depths)
 
@@ -295,8 +295,11 @@ mantel(coral.matrices_Depth_6$beta.bray, dm) #120m # No significance
 
 # However, for making a betadisper per depth and check differences between islands is not possible. I need replicates. 
 # - Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency. 
+# I tried with the cover database with all quadrats and does not work either
 
-# betadisper using all depths
+
+
+# 1st betadisper using all depths
 
 
 ## 1 ## Betadisper from  the entire mother dissimilarity matrix...
@@ -388,7 +391,9 @@ permutest(mod_Depth, pairwise = TRUE, permutations = 99)
 (mod.HSD <- TukeyHSD(mod_Depth))
 
 
-# betadisper separate per depths
+# betadisper separate per depths ### THIS IS WHAT WE SAID IN THE MEETING ###
+# Trying to keep all quadrats as replicates -  I STILL CANNOT
+
 # As I said above, this really doesn't work. I think I need replicates. Cannot use quadrats as replicates because we compute Occupancy - "Frequency"
 # Either working from mother matrix (Depth_1_Beta) or from distance matrix from bray.pair.abund of Depth_1 (=6m)
 
