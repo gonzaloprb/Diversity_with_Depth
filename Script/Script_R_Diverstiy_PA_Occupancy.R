@@ -7,7 +7,7 @@ require (betapart); require (car); require (MASS);
 require (ggpubr); require (cowplot); require (patchwork)  
 
 # Mid-domain effect
-require(devtools)
+require(devtools)   
 library(reshape2)
 install_github("cran/rangemodelR")
 library(rangemodelR)
