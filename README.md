@@ -25,5 +25,7 @@ However, the PROBLEM is making a BETADISPER PER DEPTH and check differences betw
 
 - Valeriano: you said using all quadrats per depth. However, it's impossible if we work with the index occupancy-frequency which is F = nb Quadrats with genus / Total nb of quadrats. It does not work separately for all quadrats with the cover database.
 
+You can work on any of the database (PA or Cover) and a single depth. If it works, I will do it as your solution for the rest. 
+
 Access to Google slides - Structure and figures: https://docs.google.com/presentation/d/1FsDkf9B-vjMtwWeAG_22xq8YWruY4l4PWJ26cNqRklk/edit#slide=id.gb4fd1fd75b_0_21
 Access to Google docs - Manuscript: https://docs.google.com/document/d/176O9EbcAjE3lBhTg7x5N5Ij_XRUXlvMimNIZbhNw9mk/edit
