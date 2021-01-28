@@ -6,7 +6,6 @@ require(scatterplot3d); require(reshape); require (reshape2); require (data.tabl
 require (betapart); require (car); require (MASS); 
 require (ggpubr); require (cowplot); require (patchwork)  
 
-
 # Mid-domain effect
 require(devtools)
 library(reshape2)
@@ -197,7 +196,52 @@ Depth_2_Beta <- Depth_2_Beta %>% select_if(colSums(.) != 0)
 coral.matrices_Depth_2 <- beta.pair.abund(Depth_2_Beta, index.family = "bray")
 mean (coral.matrices_Depth_2$beta.bray)
 
-# So on with the remaining depths
+### For 40m  #View(Depth_3) - Necessary rows as sites and columns as species (genera)
+Depth_3 <- filter (cast_depth, Depth == 30)
+rownames (Depth_3) <- Depth_3$Coral_genus
+Depth_3 <- subset (Depth_3, select = - c(Depth, Coral_genus))
+
+Depth_3_Beta <- as.data.frame (t(Depth_3))
+#I think, I need to delete columns where all genus are 0 
+Depth_3_Beta <- Depth_3_Beta %>% select_if(colSums(.) != 0) 
+coral.matrices_Depth_3 <- beta.pair.abund(Depth_3_Beta, index.family = "bray")
+mean (coral.matrices_Depth_3$beta.bray)
+
+### For 60m  #View(Depth_2) - Necessary rows as sites and columns as species (genera)
+Depth_4 <- filter (cast_depth, Depth == 60)
+rownames (Depth_4) <- Depth_4$Coral_genus
+Depth_4 <- subset (Depth_4, select = - c(Depth, Coral_genus))
+
+Depth_4_Beta <- as.data.frame (t(Depth_4))
+#I think, I need to delete columns where all genus are 0 
+Depth_4_Beta <- Depth_4_Beta %>% select_if(colSums(.) != 0) 
+coral.matrices_Depth_4 <- beta.pair.abund(Depth_4_Beta, index.family = "bray")
+mean (coral.matrices_Depth_4$beta.bray)
+
+### For 90m  #View(Depth_5) - Necessary rows as sites and columns as species (genera)
+Depth_5 <- filter (cast_depth, Depth == 90)
+rownames (Depth_5) <- Depth_5$Coral_genus
+Depth_5 <- subset (Depth_5, select = - c(Depth, Coral_genus))
+
+Depth_5_Beta <- as.data.frame (t(Depth_5))
+#I think, I need to delete columns where all genus are 0 
+Depth_5_Beta <- Depth_5_Beta %>% select_if(colSums(.) != 0) 
+coral.matrices_Depth_5 <- beta.pair.abund(Depth_5_Beta, index.family = "bray")
+mean (coral.matrices_Depth_5$beta.bray)
+
+### For 120m  #View(Depth_2) - Necessary rows as sites and columns as species (genera)
+Depth_6 <- filter (cast_depth, Depth == 120)
+rownames (Depth_6) <- Depth_6$Coral_genus
+Depth_6 <- subset (Depth_6, select = - c(Depth, Coral_genus))
+
+Depth_6_Beta <- as.data.frame (t(Depth_6))
+#I think, I need to delete columns where all genus are 0 
+Depth_6_Beta <- Depth_6_Beta %>% select_if(colSums(.) != 0) 
+coral.matrices_Depth_6 <- beta.pair.abund(Depth_6_Beta, index.family = "bray")
+mean (coral.matrices_Depth_6$beta.bray)
+
+
+# All remaining depths
 
 ## Betadisper 
 # Here is where I am confused...
