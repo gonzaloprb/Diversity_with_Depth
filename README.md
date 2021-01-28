@@ -4,7 +4,7 @@ Hello Seb and Valeriano
 
 I need your help with the betadisper function per depth (I cannot make it work, and I don't know if even possible)
 
-Please can you check the scripts and let me know?
+The goods are the scripts inside the folder, not the Rmarkdown
 
 the scripts do:   1) Generic richness and cover profile
                   2) NMDS
@@ -14,6 +14,7 @@ the scripts do:   1) Generic richness and cover profile
                   
                   
 you'll see that each analysis re-starts from the original database to make it easier for you. You can go straight to betadisper section # 290
+Good to check as well the results from the other sections.
 
 I am confused with the betadisper per different depth. 
 
