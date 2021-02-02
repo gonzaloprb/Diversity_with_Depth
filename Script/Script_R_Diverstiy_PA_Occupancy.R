@@ -68,7 +68,7 @@ all_short[which(all_short > 0)] = 1
 
 all_short <- t(all_short[,2:7])
 
-rm <- rangemod1d(all_short,cohesion = TRUE,var = NULL,rsize = "observed",reps = 10000)
+rm <- rangemod1d(all_short,cohesion = TRUE,var = NULL,rsize = "observed",reps = 10000, degen = T)
 ric <- rowSums(all_short) 
 depth <- c(6,20,40,60,90,120)
 
@@ -79,6 +79,29 @@ lines(depth, rm$q2.5, lty = 2)
 lines(depth, rm$q97.5, lty = 2)
 
 print (rm) 
+
+
+exp_mde <- rm$out.df
+
+# Two ways of counting the generic richness diversity
+nb_genera_all <- ddply(PA_df, ~ Depth + Coral_genus  ,function(x){
+  c(nobserv=nrow(unique (x))) })
+count <- ddply(nb_genera_all, ~ Depth ,function(x){
+  c(nobserv=nrow(unique (x))) })
+
+# Or straight
+agg <- aggregate(Coral_genus ~ Depth, data=subset(PA_df), FUN=function(x) length(unique(x)))
+
+exp_mde$obs <- count$nobserv
+# VAlues are nearly the same
+
+# Not sure if I have to make the model per island, archipalgo, island_site, etc. What is clear is that the expected results are 
+# very close to the observed ones
+
+
+
+
+
 
 ## NMDS 
 # Question 1: I cannot work with all Quadrats if we keep the PA-Occuppancy "Frequency = Nb Quadrats with genus / Total Nb Quadrats"

@@ -64,7 +64,29 @@ ggplot(coral_cover, aes(x=Depth, y=Cover)) +
         axis.title = element_text(size=11, face="bold", colour="black")) 
 
 
+
+
 # no-mid-domain effect. No test necessary. 
+
+#### Model for showing cover decreases with depth in all sites?
+# Just very quickly linear model. I don't think I need to complicate myself with glm or lmer
+
+coral_cover2 <- coral_cover
+coral_cover2$Depth <- as.numeric (as.character(coral_cover2$Depth))
+coral_cover2$Island_Site <- as.character(coral_cover2$Island_Site)
+coral_cover2$Island_Site_2 <- paste(coral_cover2$Island, "_", coral_cover2$Island_Site)
+
+# lm_1 <- lm(Cover ~  Depth, data = coral_cover2) 
+# summary (lm_1)
+
+lm_2 <- lm(Cover ~  Depth:Island_Site_2, data = coral_cover2) 
+summary (lm_2)
+
+# lm_3 <- lm(Cover ~ Depth + Depth*Island_Site_2, data = coral_cover2) 
+# summary (lm_3)
+### ? 
+
+
 
 
 
