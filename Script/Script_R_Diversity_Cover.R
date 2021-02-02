@@ -68,7 +68,7 @@ ggplot(coral_cover, aes(x=Depth, y=Cover)) +
 
 # no-mid-domain effect. No test necessary. 
 
-#### Model for showing cover decreases with depth in all sites?
+#### Mixed-Model for showing cover decreases with depth in all sites
 # Just very quickly linear model. I don't think I need to complicate myself with glm or lmer
 
 coral_cover2 <- coral_cover
@@ -86,8 +86,16 @@ summary (lm_2)
 # summary (lm_3)
 ### ? 
 
+# Mixed model with depth as fixed factor and Island_Site as Random
 
+mixed.lmer <- lmer(Cover ~ Depth + (1|Island_Site_2), data = coral_cover2)
+summary(mixed.lmer)
+plot(mixed.lmer) 
+qqnorm(resid(mixed.lmer))
+qqline(resid(mixed.lmer))
 
+lmefit <- nlme::lme(Cover ~ Depth, data = coral_cover2,random = ~ Depth | Island_Site_2)
+summary(lmefit)
 
 
 # NMDS for cover,
@@ -295,13 +303,14 @@ dm_120 <- dm
 # Transform to object of class dist
 dm <- dist (dm)
 
-##### Make the mantel test ##### 
+##### Make the mantel test ##### (the more permutations, more significant)
 # For Depth 1 - 6m 
-mantel(coral.matrices_Depth_1$beta.bray, dm) # 6m , strong + correlation (significant)
-mantel(coral.matrices_Depth_2$beta.bray, dm) # 20m
+mantel(coral.matrices_Depth_1$beta.bray, dm, method = "pearson", permutations = 10000) # 6m , strong + correlation (significant)
+# Bray distance 0.6224 correlated and significant
+mantel(coral.matrices_Depth_2$beta.bray, dm) # 20m # Bray distance not correlated and not significan with distance
 mantel(coral.matrices_Depth_3$beta.bray, dm) # 40m
 mantel(coral.matrices_Depth_4$beta.bray, dm) # 60m
-mantel(coral.matrices_Depth_5$beta.bray, dm) #90m
+mantel(coral.matrices_Depth_5$beta.bray, dm,method = "pearson",permutations = 10000 ) #90m
 
 # For 120m, Necessary to change the dimesnsion as I had to remove two sites (no corals at all)
 # Delete columns
@@ -322,55 +331,10 @@ mantel(coral.matrices_Depth_6$beta.bray, dm_120) #120m weak + correlation (signi
 # Here is where I am confused...
 # I can make it for all depths together, considering groups as different depths. I obtain (1) the average distance to median ("b-dissimilarity" per depth ?), (2) anova and (3)permutest pair-wise differences between (depths)
 
-# Working with all depths, either I work with the mother matrix ## 1 ##  or straight from beta.pair.abund matrix ## 2 ## 
-
-# However, for making a betadisper per depth and check differences between islands is not possible. I need replicates. 
-# - Valeriano: you said using all quadrats per depth. However, impossible if we work with the index occupancy-frequency. 
-# I tried with the cover database with all quadrats and does not work either
 
 # 1st betadisper using all depths
 
-## 1 ## Betadisper from  the entire mother dissimilarity matrix...
-resume_df <- ddply(rndpts_df, ~ Island + Island_Site + Depth + Coral_genus ,
-                   function(x){c(Cover= sum(x$Cover)/30) })
-
-melt_temp = melt(resume_df, id=c("Island","Island_Site","Depth","Coral_genus"), measure.vars="Cover", na.rm=FALSE)
-
-cast_temp = dcast(melt_temp, Depth +  Island + Island_Site ~ Coral_genus, mean, add.missing = T)
-cast_temp[is.na(cast_temp)] <- 0
-
-cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Makatea","Gambier","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
-cast_database <- cast_temp
-
-# Preparing them for format matrix
-cast_temp$ID<- with(cast_temp, paste0(Depth, sep = "_",  Island,  sep = "_", Island_Site))
-rownames (cast_temp) <- cast_temp$ID
-
-cast_temp <- cast_temp[,-c(1,2,3,37)]
-
-# columns where sum is 0
-cast_temp <- cast_temp %>% select_if(colSums(.) != 0)
-# rows where sum is 0
-cast_temp <- cast_temp[rowSums(cast_temp[,])>0, ]
-
-# Distance of the entire dissimilarity matrix
-dis <- vegdist(cast_temp)
-# dis <- vegdist(cast_depth)
-groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",14))
-
-# Calculate multivariate dispersions
-mod <- betadisper(dis, groups)
-mod
-
-# Perform test
-anova(mod)
-# Permutation test for F
-permutest(mod, pairwise = TRUE, permutations = 99)
-# Tukey's Honest Significant Differences
-(mod.HSD <- TukeyHSD(mod))
-
-
-## 2 ##  Betadisper from the beta.pair bray distance matrix 
+##   Betadisper from the beta.pair bray distance matrix, this is the good one!
 
 resume_df <- ddply(rndpts_df, ~ Island + Island_Site + Depth + Coral_genus ,
                    function(x){c(Cover= sum(x$Cover)/30) })
@@ -379,7 +343,7 @@ melt_temp = melt(resume_df, id=c("Island","Island_Site","Depth","Coral_genus"), 
 cast_temp = dcast(melt_temp, Depth +  Island + Island_Site ~ Coral_genus, mean, add.missing = T)
 cast_temp[is.na(cast_temp)] <- 0
 
-cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Makatea","Gambier","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
+cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Gambier","Makatea","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
 
 cast_all_depth <- cast_temp
 cast_all_depth$ID<- with(cast_all_depth, paste0(Depth, sep = "_",  Island,  sep = "_", Island_Site))
@@ -395,85 +359,51 @@ cast_all_depth <- cast_all_depth[rowSums(cast_all_depth[,])>0, ]
 coral.matrices_Depth <- beta.pair.abund(cast_all_depth, index.family = "bray")
 mean (coral.matrices_Depth$beta.bray)
 
-Beta_Depth <- dist (coral.matrices_Depth$beta.bray)
+# Beta_Depth <- dist (coral.matrices_Depth$beta.bray)
+Beta_Depth <- coral.matrices_Depth$beta.bray
 
-mod_Depth <- betadisper (Beta_Depth,groups)
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",14))
+
+mod_Depth <- betadisper (Beta_Depth,groups, type = "median", bias.adjust=TRUE)
 mod_Depth
+
+plot (mod_Depth)
+boxplot (mod_Depth)
 
 # Perform test
 anova(mod_Depth)
 # Permutation test for F
-permutest(mod_Depth, pairwise = TRUE, permutations = 99)
+permutest(mod_Depth, pairwise = TRUE, permutations = 999)
+
 # Tukey's Honest Significant Differences
-(mod.HSD <- TukeyHSD(mod_Depth))
+plot (mod.HSD <- TukeyHSD(mod_Depth))
 
 
+distances_centroid <- as.data.frame(mod_Depth$distances)
+colnames (distances_centroid) <- "Distances"
+distances_centroid$Depth <- sapply(strsplit(rownames(distances_centroid), "_"), "[", 1)
+mean <- aggregate (Distances ~ Depth, distances_centroid,"mean")
+sd <- aggregate (Distances ~ Depth, distances_centroid,"sd")
+mean$sd <- sd [2]
+mean$Distances<- round(mean$Distances, digits = 3)
+mean$sd<- round(mean$sd, digits = 3)
 
-# betadisper separate per depths !! ### THIS IS WHAT WE SAID IN THE MEETING ###
-# Trying to keep all quadrats as replicates -  I STILL CANNOT
+# Or 
+with(mod_Depth, tapply(distances, groups, "mean"))
 
+distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
 
-quadrat_df <- ddply(rndpts_df, ~ Island + Island_Site + Depth + Quadrat + Coral_genus ,
-                   function(x){c(Cover= sum(x$Cover)) })
-
-# Complete rows for all genera with Coral cover = 0 for all genera
-quadrat_df <- quadrat_df %>% complete( Island,Island_Site,Depth,Quadrat, Coral_genus,fill = list(Cover = 0))
-# Prepare columns and rows (by now keeping depth)
-melt_quadrat = melt(quadrat_df, id=c("Depth","Island", "Island_Site", "Quadrat","Coral_genus"), measure.vars="Cover", na.rm=FALSE)
-melt_quadrat$ID<- with(melt_quadrat, paste0(Island, sep = "_", Island_Site, sep = "_", Quadrat))
-cast_quadrat = dcast(melt_quadrat, Depth + Coral_genus ~ ID, mean, add.missing = T)
-
-### For Depth 6m  #View(Depth_1) - Necessary rows as sites and columns as species (genera)
-Depth_1 <- filter (cast_quadrat, Depth == 6)
-rownames (Depth_1) <- Depth_1$Coral_genus
-Depth_1 <- subset (Depth_1, select = - c(Depth, Coral_genus))
-
-Depth_1_Beta <- as.data.frame (t(Depth_1))
-#I think, I need to delete columns where all genus are 0 
-Depth_1_Beta <- Depth_1_Beta %>% select_if(colSums(.) != 0) 
-Depth_1_Beta <- Depth_1_Beta[rowSums(Depth_1_Beta[,])>0, ]
-
-coral.matrices_Depth_1 <- beta.pair.abund(Depth_1_Beta, index.family = "bray")
-
-beta_Depth_1 <- dist (coral.matrices_Depth_1$beta.bray)
-dis1 <- vegdist(Depth_1_Beta, method = "bray")
-
-# Only with Depth 1
-groups <- rownames (Depth_1_Beta)
-# groups <- c(rep("6M",16))
-
-mod1 <- betadisper (dis1,groups)
-# mod1 <- betadisper (beta_Depth_1,groups)
-mod1
-# Perform test
-anova(mod1)
-# Permutation test for F
-permutest(mod1, pairwise = TRUE, permutations = 99)
-
-## Tukey's Honest Significant Differences
-# (mod.HSD <- TukeyHSD(mod1))
-
-
-### Depth_2
-beta_Depth_2 <- dist (coral.matrices_Depth_2$beta.bray)
-dis2 <- vegdist(Depth_2_Beta)
-
-# Only with Depth 1
-groups <- rownames (Depth_2_Beta)
-
-mod2 <- betadisper (beta_Depth_2,groups)
-# mod2
-
-str(beta_Depth_1)
+# Red points are average distance to median of betadisper
+ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
+  geom_boxplot() + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
+  ylab ("Distance to median") + xlab ("Depth (m)") +
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+        axis.text = element_text(size=10, colour="black"),
+        axis.title = element_text(size=11, face="bold", colour="black")) 
 
 
 
 
-
-
-
-
-# and so on!
 
 
 
