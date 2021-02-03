@@ -134,12 +134,12 @@ anova (mixed.lmer,mixed.lmer_2,mixed.lmer_3,mixed.lmer_4,mixed.lmer_5)
 
 # Smaller AIC and BIC is mixed.lmer     Cover = Depth * -0.31038 + 38.82288 
 
-
+# Fitted plot from model 
 
 coral_cover2$fit <- predict(mixed.lmer) # Add model to the dataframe
 
 
-ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.3, method = "auto") +
+ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.3, method = "auto", size = 0.2) +
   geom_line(aes(y=fit), size=0.8, linetype="dashed", col = "red") + 
   geom_point(alpha = 0.3) + 
   theme_bw()
@@ -148,8 +148,17 @@ coral_cover$fit <- predict(mixed.lmer)
 # Make the plot again
 coral_cover$Depth <- as.numeric (as.character(coral_cover$Depth))
 
-ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes (colour = Island),size = 0.5, alpha = 0.8)  + stat_smooth(span = 0.8, method = "loess") + 
+ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(size = 0.5, alpha = 0.8)  + geom_smooth(span = 0.8, method = "loess", se = F) + 
   geom_line(aes(y=fit), size=0.7, linetype="dashed", col = "red") +   stat_summary(fun=mean, geom="point", shape=18, color="red", size=3) + 
+  theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
+  theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+        axis.text = element_text(size=10, colour="black"),
+        axis.title = element_text(size=11, face="bold", colour="black")) 
+
+ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(size = 0.5, alpha = 0.8)  + 
+  geom_ribbon(stat = "smooth",method = "loess", se = T, alpha = 0, colour = "black", linetype = "dotted")+
+  geom_line(aes(y=fit), size=0.7, linetype="dashed", col = "red") +
+  stat_summary(fun=mean, geom="point", shape=18, color="red", size=3) + 
   theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
   theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
         axis.text = element_text(size=10, colour="black"),
