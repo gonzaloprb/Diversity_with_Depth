@@ -147,7 +147,7 @@ orditorp(total_NMDS,display="species",col="red",air=0.01, cex =0.5)
 legend(x="topright", y="top", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  pt.cex=0.8, cex = 0.70, horiz = F, text.width = 0.3, text.font = 20)
 title ("Bray distance - Coral cover")
 mysubtitle <- paste0("Stress = ", format(round(total_NMDS$stress, 2)))
-mtext(mysubtitle, side=1, line=-2, at=0, adj=0, cex=0.7)
+mtext(mysubtitle, side=1, line=-2, at=0, adj=0, cex=0.7) 
 
 
 ########## Maybe here trying to make the NMDS with all quadrats,(rndpts_df) and not quadrats pooled together #########
