@@ -51,14 +51,15 @@ rndpts_df <- aggregate (Cover ~ Unique_Image_ID + Date + Site + Archipelago + Is
 # Calculate sum for coral cover in function of site and depth for a quick interpretation and plot
 coral_cover <- aggregate (Cover ~ Island + Island_Site + Depth, coral_data , sum)
 
+
 # Transform depth as a Qualitative variable  
 coral_cover$Depth <- as.factor(as.character(coral_cover$Depth))
 coral_cover$Depth = factor(coral_cover$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
 
 # ggplot with island sites
-ggplot(coral_cover, aes(x=Depth, y=Cover)) +
+ggplot(coral_cover, aes(x=Depth, y=Cover)) + 
   geom_boxplot() + geom_point(aes (colour = Island),size = 1) + stat_summary(fun=mean, geom="point", shape=18, color="red", size=4) + 
-  theme_bw()  + ylab ("Cover (%)") + xlab ("Depth (m)") +
+  theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
   theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
         axis.text = element_text(size=10, colour="black"),
         axis.title = element_text(size=11, face="bold", colour="black")) 
@@ -66,7 +67,7 @@ ggplot(coral_cover, aes(x=Depth, y=Cover)) +
 
 
 
-# no-mid-domain effect. No test necessary. 
+# no-mid-domain effect. 
 
 #### Mixed-Model for showing cover decreases with depth in all sites
 # Just very quickly linear model. I don't think I need to complicate myself with glm or lmer
@@ -87,15 +88,74 @@ summary (lm_2)
 ### ? 
 
 # Mixed model with depth as fixed factor and Island_Site as Random
+# Convergence code: 0 means no error
 
 mixed.lmer <- lmer(Cover ~ Depth + (1|Island_Site_2), data = coral_cover2)
 summary(mixed.lmer)
+# No variance as Site is only considered as random intercept
 plot(mixed.lmer) 
 qqnorm(resid(mixed.lmer))
 qqline(resid(mixed.lmer))
+# Check singularity
+# diag.vals <- getME(mixed.lmer,"theta")[getME(mixed.lmer,"lower") == 0]
+# any(diag.vals < 1e-6) # FALSE
 
-lmefit <- nlme::lme(Cover ~ Depth, data = coral_cover2,random = ~ Depth | Island_Site_2)
-summary(lmefit)
+# P-values og glmer
+library (nlme)
+nlme_1 <- lme(Cover ~ Depth, random = ~1|Island_Site, coral_cover2)
+anova(nlme_1)
+
+mixed.lmer_2 <- lmer(Cover ~ Depth + (Depth | Island_Site_2), coral_cover2)
+summary(mixed.lmer_2)
+# 1.766e+01/(1.766e+01 +1.804e+02) --> Island_Site_2 explains 8% of variance
+plot(mixed.lmer_2) 
+qqnorm(resid(mixed.lmer_2))
+qqline(resid(mixed.lmer_2))
+
+mixed.lmer_3 <- lmer(Cover ~ Depth + (Depth || Island_Site_2), coral_cover2)
+summary(mixed.lmer_3)
+plot(mixed.lmer_3) 
+qqnorm(resid(mixed.lmer_3))
+qqline(resid(mixed.lmer_3))
+
+mixed.lmer_4 <- lmer(Cover ~ 1 + Depth + (1 + Depth | Island_Site_2), coral_cover2)
+summary(mixed.lmer_4)
+plot(mixed.lmer_4) 
+qqnorm(resid(mixed.lmer_4))
+qqline(resid(mixed.lmer_4))
+
+mixed.lmer_5 <- lmer(Cover ~ 1 + Depth + (1 + Depth | Island_Site_2) +  (1|Island_Site_2) , coral_cover2)
+summary(mixed.lmer_5)
+plot(mixed.lmer_5) 
+qqnorm(resid(mixed.lmer_5))
+qqline(resid(mixed.lmer_5))
+
+anova (mixed.lmer,mixed.lmer_2,mixed.lmer_3,mixed.lmer_4,mixed.lmer_5)
+
+# Smaller AIC and BIC is mixed.lmer     Cover = Depth * -0.31038 + 38.82288 
+
+
+
+coral_cover2$fit <- predict(mixed.lmer) # Add model to the dataframe
+
+
+ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.3, method = "auto") +
+  geom_line(aes(y=fit), size=0.8, linetype="dashed", col = "red") + 
+  geom_point(alpha = 0.3) + 
+  theme_bw()
+
+coral_cover$fit <- predict(mixed.lmer)
+# Make the plot again
+coral_cover$Depth <- as.numeric (as.character(coral_cover$Depth))
+
+ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes (colour = Island),size = 0.5, alpha = 0.8)  + stat_smooth(span = 0.8, method = "loess") + 
+  geom_line(aes(y=fit), size=0.7, linetype="dashed", col = "red") +   stat_summary(fun=mean, geom="point", shape=18, color="red", size=3) + 
+  theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
+  theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+        axis.text = element_text(size=10, colour="black"),
+        axis.title = element_text(size=11, face="bold", colour="black")) 
+
+
 
 
 # NMDS for cover,
@@ -137,7 +197,7 @@ colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
 
 par (mfrow =c(1,1))
 # 120, 20, 40, 60, 6, 90)
-
+pdf("~/Desktop/NMDS_Diversity_Coral_Cover_Bray.pdf", bg = "white") # starts writing a PDF to file
 ordiplot(total_NMDS,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
 orditorp(total_NMDS,display="sites",labels =T, cex = 0.1)
 orditorp(total_NMDS,display="sites",cex=0.3,air=0.01)
@@ -148,6 +208,7 @@ legend(x="topright", y="top", legend=c ("120m","90m","60m", "40m","20m","6m"), c
 title ("Bray distance - Coral cover")
 mysubtitle <- paste0("Stress = ", format(round(total_NMDS$stress, 2)))
 mtext(mysubtitle, side=1, line=-2, at=0, adj=0, cex=0.7) 
+dev.off()
 
 
 ########## Maybe here trying to make the NMDS with all quadrats,(rndpts_df) and not quadrats pooled together #########

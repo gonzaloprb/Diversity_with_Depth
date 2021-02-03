@@ -58,6 +58,7 @@ ggplot(nb_genera, aes(x=Depth, y=nobserv)) +
         axis.text = element_text(size=10, colour="black"),
         axis.title = element_text(size=11, face="bold", colour="black")) 
 
+
 ## Mid-domain effect
 # Ideally represent with Genus richness profile
 
@@ -102,6 +103,8 @@ exp_mde$obs <- count$nobserv
 
 # Mid-domain effect per island
 
+par(mfrow=c(2,4))
+
 # For each island
 MDE_Island <- lapply(unique(PA_df$Island), function (x) {
   
@@ -117,28 +120,19 @@ MDE_Island <- lapply(unique(PA_df$Island), function (x) {
   depth <- c(6,20,40,60,90,120)
   
   
-  plot(depth, ric, ylim = c(2,32), xlab = "Depth", ylab="Richness", type="n", main = x)
+  plot(depth, ric, ylim = c(2,32), xlab = "Depth", ylab="Generic richness", type="n", main = x)
   lines(depth, ric, lwd = 5, col="blue")
   lines(depth, rm$mod.rich, lwd=1)
   lines(depth, rm$q2.5, lty = 2)
   lines(depth, rm$q97.5, lty = 2)
+
+  
   
   return(rm)
   return(ric)
   return(depth)
   
 })
-
-# MDE for different islands
-MDE_Bora <- MDE_Island[[1]]
-MDE_Makatea <- MDE_Island[[2]]
-MDE_Gambier <- MDE_Island[[3]]
-MDE_Moorea <- MDE_Island[[4]]
-MDE_Rangiroa <- MDE_Island[[5]]
-MDE_Raroia <- MDE_Island[[6]]
-MDE_Tahiti <- MDE_Island[[7]]
-MDE_Tikehau <- MDE_Island[[8]]
-
 
 # Two ways of counting the generic richness diversity, - per island
 nb_genera_all <- ddply(PA_df, ~ Island + Depth + Coral_genus  ,function(x){
@@ -148,11 +142,32 @@ count <- ddply(nb_genera_all, ~ Island + Depth ,function(x){
 
 # Or straight
 agg <- aggregate(Coral_genus ~ Island + Depth, data=subset(PA_df), FUN=function(x) length(unique(x)))
+colnames (agg) [3]<- "Richness"
 
-# Make a plot of expected results vs observations
-exp_mde$obs <- count$nobserv
+# MDE for different islands from the generated list
+MDE_Bora <- cbind (MDE_Island[[1]], subset(agg, Island == 'Bora'))
+MDE_Makatea <- cbind (MDE_Island[[2]], subset(agg, Island == 'Makatea'))
+MDE_Gambier <- cbind (MDE_Island[[3]], subset(agg, Island == 'Gambier'))
+MDE_Moorea <- cbind (MDE_Island[[4]], subset(agg, Island == 'Moorea'))
+MDE_Rangiroa <- cbind (MDE_Island[[5]], subset(agg, Island == 'Rangiroa'))
+MDE_Raroia <- cbind (MDE_Island[[6]], subset(agg, Island == 'Raroia'))
+MDE_Tahiti <- cbind (MDE_Island[[7]], subset(agg, Island == 'Tahiti'))
+MDE_Tikehau <- cbind (MDE_Island[[8]], subset(agg, Island == 'Tikehau'))
 
+MDE_all <- rbind (MDE_Bora,MDE_Makatea,MDE_Gambier,MDE_Moorea,MDE_Rangiroa,MDE_Raroia,MDE_Tahiti,MDE_Tikehau)
 
+# Maybe use some tests here? 
+cor.test(MDE_all$mod.rich, MDE_all$Richness,  method = "pearson", use = "complete.obs")
+
+RMSE = function(obs, pred){
+  sqrt(mean((obs - pred)^2))
+}
+
+pred <- MDE_all$mod.rich
+obs <- MDE_all$Richness
+
+RMSE (obs, pred)
+bias <- mean (pred)-mean (obs)
 
 
 ############ PA (0 or 1) ###################
@@ -203,6 +218,7 @@ colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
 
 par (mfrow =c(1,1))
 
+pdf("~/Desktop/NMDS_Diversity_PA_Jaccard.pdf", bg = "white") # starts writing a PDF to file
 ordiplot(PA_NMDS,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
 orditorp(PA_NMDS,display="sites",labels =T)
 orditorp(PA_NMDS,display="sites",cex=0.4,air=0.01)
@@ -213,6 +229,7 @@ legend(x="topright", y="top", legend=c ("120m","90m","60m", "40m","20m","6m"), c
 title ("Jaccard distance - PA")
 mysubtitle <- paste0("Stress = ", format(round(PA_NMDS$stress, 2)))
 mtext(mysubtitle, side=1, line=-2, at=0, adj=0, cex=0.7)
+dev.off()
 
 
 ## Beta.pair per depth
@@ -319,7 +336,8 @@ coral.matrices_Depth_6 <- beta.pair(Depth_6_Beta, index.family = "jaccard")
 mean (coral.matrices_Depth_6$beta.jac)
 
 
-## Mantel tests with distance - per depth
+
+
 
 # I can also plot bray-distance according to vertical depth distance measuring bray-distance per site and not per depth
 
@@ -362,6 +380,8 @@ mantel(coral.matrices_Depth_4$beta.jac, dm) # 60m
 mantel(coral.matrices_Depth_5$beta.jac, dm) #90m #
 mantel(coral.matrices_Depth_6$beta.jac, dm) #120m # No significance
 # This means that the beta.jac distance is not correlated to distance
+
+
 
 
 ### Betadisper 
@@ -443,7 +463,9 @@ ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) +
 
 
 ####################################################################################
-
+####################################################################################
+####################################################################################
+####################################################################################
 
 # ############### "Frequency = Nb Quadrats with genus / Total Nb Quadrats" ###################
 ## NMDS 
