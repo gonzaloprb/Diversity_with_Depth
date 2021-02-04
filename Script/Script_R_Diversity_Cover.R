@@ -374,16 +374,17 @@ summary (lm(beta_bray~ Depth,beta_div_depth ))
 # Beta_Depth_All_matrix$Depth <- as.numeric (Beta_Depth_All_matrix$Depth)
 # 
 # summary (lm (value ~ Depth, Beta_Depth_All_matrix))
+# 
+# library (usedist)
+# 
+# beta_Depth_1 <- dist_setNames(beta_Depth_1, paste0 ("6",sep = "_",rownames (Depth_1_Beta)))
+# 
+# beta_Depth_2 <- dist_setNames(beta_Depth_2, paste0 ("20",sep = "_",rownames (Depth_2_Beta)))
+
 ######## I think I can delete ##############
 
 
 ## Mantel tests with distance - per depth
-
-library (usedist)
-
-beta_Depth_1 <- dist_setNames(beta_Depth_1, paste0 ("6",sep = "_",rownames (Depth_1_Beta)))
-
-beta_Depth_2 <- dist_setNames(beta_Depth_2, paste0 ("20",sep = "_",rownames (Depth_2_Beta)))
 
 
 # I can also plot bray-distance according to vertical depth distance measuring bray-distance per site and not per depth
