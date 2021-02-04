@@ -337,7 +337,7 @@ Depth_6_Beta <- as.data.frame (t(Depth_6))
 Depth_6_Beta <- Depth_6_Beta %>% select_if(colSums(.) != 0) 
 Depth_6_Beta <- Depth_6_Beta[rowSums(Depth_6_Beta[,])>0, ]
 coral.matrices_Depth_6 <- beta.pair.abund(Depth_6_Beta, index.family = "bray")
-beta_6 <- mean (coral.matrices_Depth_6$beta.bray)
+beta_6 <- mean (coral.matrices_Depth_6$beta.bray) 
 mean (coral.matrices_Depth_6$beta.bray)
 
 

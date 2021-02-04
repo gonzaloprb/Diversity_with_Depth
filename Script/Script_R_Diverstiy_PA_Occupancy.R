@@ -837,7 +837,7 @@ ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) +
   ylab ("Distance to median") + xlab ("Depth (m)") +
   theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
                       axis.text = element_text(size=10, colour="black"),
-                      axis.title = element_text(size=11, face="bold", colour="black")) 
+                      axis.title = element_text(size=11, face="bold", colour="black"))  
 
 
 
