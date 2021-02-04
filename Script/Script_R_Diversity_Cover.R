@@ -120,6 +120,8 @@ qqline(resid(mixed.lmer_3))
 
 mixed.lmer_4 <- lmer(Cover ~ 1 + Depth + (1 + Depth | Island_Site_2), coral_cover2)
 summary(mixed.lmer_4)
+# 1.766e+01/(1.766e+01 +1.804e+02) --> Intercept of Island_Site_2 explains 8% of variance
+# 1.726e-03 /(1.726e-03  +1.804e+02) --> Intercept of Island_Site_2 explains 8% of variance
 plot(mixed.lmer_4) 
 qqnorm(resid(mixed.lmer_4))
 qqline(resid(mixed.lmer_4))
@@ -138,8 +140,7 @@ anova (mixed.lmer,mixed.lmer_2,mixed.lmer_3,mixed.lmer_4,mixed.lmer_5)
 
 coral_cover2$fit <- predict(mixed.lmer) # Add model to the dataframe
 
-
-ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.3, method = "auto", size = 0.2) +
+ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.9, method = "loess", size = 0.2, colour = "transparent") +
   geom_line(aes(y=fit), size=0.8, linetype="dashed", col = "red") + 
   geom_point(alpha = 0.3) + 
   theme_bw()
@@ -148,21 +149,23 @@ coral_cover$fit <- predict(mixed.lmer)
 # Make the plot again
 coral_cover$Depth <- as.numeric (as.character(coral_cover$Depth))
 
-ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(size = 0.5, alpha = 0.8)  + geom_smooth(span = 0.8, method = "loess", se = F) + 
+ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes (colour = Island),size = 0.5, alpha = 0.8)  + geom_smooth(span = 0.8, method = "loess", se = F) + 
   geom_line(aes(y=fit), size=0.7, linetype="dashed", col = "red") +   stat_summary(fun=mean, geom="point", shape=18, color="red", size=3) + 
   theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
   theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
         axis.text = element_text(size=10, colour="black"),
         axis.title = element_text(size=11, face="bold", colour="black")) 
 
-ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(size = 0.5, alpha = 0.8)  + 
+ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes(colour = Island),size = 0.5, alpha = 0.8)  + 
   geom_ribbon(stat = "smooth",method = "loess", se = T, alpha = 0, colour = "black", linetype = "dotted")+
-  geom_line(aes(y=fit), size=0.7, linetype="dashed", col = "red") +
-  stat_summary(fun=mean, geom="point", shape=18, color="red", size=3) + 
-  theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
-  theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
-        axis.text = element_text(size=10, colour="black"),
-        axis.title = element_text(size=11, face="bold", colour="black")) 
+  stat_summary(fun=mean, geom="point", shape=18, color="red", size=4) + 
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color="red", size=0.5, width=2) +
+  geom_line(aes(y=fit), size=1, linetype="dashed", col = "blue") +
+  scale_x_continuous(name ="Depth (m)", limits=c(-2,130), breaks = c(6,20,40,60,90,120)) +
+  scale_y_continuous(name ="Coral cover (%)", limits=c(-5,80), breaks = c(0,20,40,60,80)) +
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+                  axis.text = element_text(size=10, colour="black"),
+                  axis.title = element_text(size=11, face="bold", colour="black")) 
 
 
 
