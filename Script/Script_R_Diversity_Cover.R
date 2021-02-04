@@ -156,10 +156,13 @@ ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes (colour = Island),si
         axis.text = element_text(size=10, colour="black"),
         axis.title = element_text(size=11, face="bold", colour="black")) 
 
+
+
+
 ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes(colour = Island),size = 0.5, alpha = 0.8)  + 
   geom_ribbon(stat = "smooth",method = "loess", se = T, alpha = 0, colour = "black", linetype = "dotted")+
-  stat_summary(fun=mean, geom="point", shape=18, color="red", size=4) + 
-  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color="red", size=0.5, width=2) +
+  stat_summary(fun=mean, geom="point", shape=18, color="black", size=4) + 
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", color="black", size=0.5, width=2) +
   geom_line(aes(y=fit), size=1, linetype="dashed", col = "blue") +
   scale_x_continuous(name ="Depth (m)", limits=c(-2,130), breaks = c(6,20,40,60,90,120)) +
   scale_y_continuous(name ="Coral cover (%)", limits=c(-5,80), breaks = c(0,20,40,60,80)) +
@@ -271,7 +274,8 @@ coral.matrices_Depth_1 <- beta.pair.abund(Depth_1_Beta, index.family = "bray")
 
 mean (coral.matrices_Depth_1$beta.bray.bal) # This is species replacement 
 mean (coral.matrices_Depth_1$beta.bray.gra) # This is species nestedness
-mean (coral.matrices_Depth_1$beta.bray) # PArtially divided between species replacement and nestedness. Accounts for the two of them. 
+beta_1 <- mean (coral.matrices_Depth_1$beta.bray) # PArtially divided between species replacement and nestedness. Accounts for the two of them. 
+mean (coral.matrices_Depth_1$beta.bray)
 # Turnover is slightly smaller than nestedness in the overall dissimilarity 
 
 
@@ -284,6 +288,7 @@ Depth_2_Beta <- as.data.frame (t(Depth_2))
 #I think, I need to delete columns where all genus are 0 
 Depth_2_Beta <- Depth_2_Beta %>% select_if(colSums(.) != 0) 
 coral.matrices_Depth_2 <- beta.pair.abund(Depth_2_Beta, index.family = "bray")
+beta_2 <- mean (coral.matrices_Depth_2$beta.bray)
 mean (coral.matrices_Depth_2$beta.bray)
 
 ### For 40m  #View(Depth_3) - Necessary rows as sites and columns as species (genera)
@@ -295,6 +300,7 @@ Depth_3_Beta <- as.data.frame (t(Depth_3))
 #I think, I need to delete columns where all genus are 0 
 Depth_3_Beta <- Depth_3_Beta %>% select_if(colSums(.) != 0) 
 coral.matrices_Depth_3 <- beta.pair.abund(Depth_3_Beta, index.family = "bray")
+beta_3 <- mean (coral.matrices_Depth_3$beta.bray)
 mean (coral.matrices_Depth_3$beta.bray)
 
 ### For 60m  #View(Depth_4) - Necessary rows as sites and columns as species (genera)
@@ -306,6 +312,7 @@ Depth_4_Beta <- as.data.frame (t(Depth_4))
 #I think, I need to delete columns where all genus are 0 
 Depth_4_Beta <- Depth_4_Beta %>% select_if(colSums(.) != 0) 
 coral.matrices_Depth_4 <- beta.pair.abund(Depth_4_Beta, index.family = "bray")
+beta_4 <- mean (coral.matrices_Depth_4$beta.bray)
 mean (coral.matrices_Depth_4$beta.bray)
 
 ### For 90m  #View(Depth_5) - Necessary rows as sites and columns as species (genera)
@@ -317,6 +324,7 @@ Depth_5_Beta <- as.data.frame (t(Depth_5))
 #I think, I need to delete columns where all genus are 0 
 Depth_5_Beta <- Depth_5_Beta %>% select_if(colSums(.) != 0) 
 coral.matrices_Depth_5 <- beta.pair.abund(Depth_5_Beta, index.family = "bray")
+beta_5 <- mean (coral.matrices_Depth_5$beta.bray)
 mean (coral.matrices_Depth_5$beta.bray)
 
 ### For 120m  #View(Depth_6) - Necessary rows as sites and columns as species (genera)
@@ -329,9 +337,44 @@ Depth_6_Beta <- as.data.frame (t(Depth_6))
 Depth_6_Beta <- Depth_6_Beta %>% select_if(colSums(.) != 0) 
 Depth_6_Beta <- Depth_6_Beta[rowSums(Depth_6_Beta[,])>0, ]
 coral.matrices_Depth_6 <- beta.pair.abund(Depth_6_Beta, index.family = "bray")
+beta_6 <- mean (coral.matrices_Depth_6$beta.bray)
 mean (coral.matrices_Depth_6$beta.bray)
 
 
+#### I think I have it: 
+
+# Create data.frame
+boxplot (coral.matrices_Depth_1$beta.bray,coral.matrices_Depth_2$beta.bray, coral.matrices_Depth_3$beta.bray,coral.matrices_Depth_4$beta.bray,coral.matrices_Depth_5$beta.bray, coral.matrices_Depth_6$beta.bray,
+         xlab = "Depth (m)",
+         ylab = "Beta.bray Diversity",
+         names = c("6","20","40","60","90", "120"), 
+         main = "Bray distance - Coral cover")
+
+beta_div_depth <- data.frame(Depth=c("6", "20", "40", "60", "90", "120"), 
+                             beta_bray=c(beta_1, beta_2, beta_3, beta_4, beta_5, beta_6))
+
+beta_div_depth$Depth <- as.numeric (beta_div_depth$Depth)
+summary (lm(beta_bray~ Depth,beta_div_depth ))
+
+
+######## I think I can delete ##############
+
+# Beta_Depth_1_matrix <- melt(as.matrix(coral.matrices_Depth_1$beta.bray), varnames = c("row", "col"))
+# Beta_Depth_1_matrix$Depth <- "6"
+# Beta_Depth_2_matrix <- melt(as.matrix(coral.matrices_Depth_2$beta.bray), varnames = c("row", "col"))
+# Beta_Depth_2_matrix$Depth <- "20"
+# Beta_Depth_3_matrix <- melt(as.matrix(coral.matrices_Depth_3$beta.bray), varnames = c("row", "col"))
+# Beta_Depth_3_matrix$Depth <- "40"
+# Beta_Depth_5_matrix <- melt(as.matrix(coral.matrices_Depth_5$beta.bray), varnames = c("row", "col"))
+# Beta_Depth_5_matrix$Depth <- "90"
+# Beta_Depth_6_matrix <- melt(as.matrix(coral.matrices_Depth_6$beta.bray), varnames = c("row", "col"))
+# Beta_Depth_6_matrix$Depth <- "120"
+# 
+# Beta_Depth_All_matrix <- rbind (Beta_Depth_1_matrix,Beta_Depth_2_matrix,Beta_Depth_3_matrix,Beta_Depth_5_matrix,Beta_Depth_6_matrix)
+# Beta_Depth_All_matrix$Depth <- as.numeric (Beta_Depth_All_matrix$Depth)
+# 
+# summary (lm (value ~ Depth, Beta_Depth_All_matrix))
+######## I think I can delete ##############
 
 
 ## Mantel tests with distance - per depth
@@ -344,6 +387,7 @@ beta_Depth_2 <- dist_setNames(beta_Depth_2, paste0 ("20",sep = "_",rownames (Dep
 
 
 # I can also plot bray-distance according to vertical depth distance measuring bray-distance per site and not per depth
+
 
 
 # Mantel tests 
