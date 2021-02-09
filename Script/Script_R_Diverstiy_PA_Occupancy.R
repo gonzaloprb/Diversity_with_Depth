@@ -479,7 +479,11 @@ cast_temp[is.na(cast_temp)] <- 0
 cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Makatea","Gambier","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
 
 cast_all_depth <- cast_temp
+# Necessary for distance afterwards
+cast_temp$ID <- with(cast_temp, paste0(Island,  sep = "_", Island_Site))
+
 cast_all_depth$ID<- with(cast_all_depth, paste0(Depth, sep = "_",  Island,  sep = "_", Island_Site))
+
 rownames (cast_all_depth) <- cast_all_depth$ID
 
 cast_all_depth <- cast_all_depth[,-c(1,2,3,38)]
@@ -492,6 +496,7 @@ cast_all_depth <- cast_all_depth[rowSums(cast_all_depth[,])>0, ]
 coral.matrices_Depth <- beta.pair(cast_all_depth, index.family = "jaccard")
 mean (coral.matrices_Depth$beta.jac)
 
+# Beta jaccard
 # Beta_Depth <- dist (coral.matrices_Depth$beta.jac)
 Beta_Depth <- coral.matrices_Depth$beta.jac
 
@@ -500,7 +505,26 @@ groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",
 mod_Depth <- betadisper (Beta_Depth,groups)
 mod_Depth
 
+# Here make the NMDS for Jaccard separating by depths
 plot (mod_Depth)
+# Prepare to plot
+colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
+# 120, 20, 40, 60, 6, 90)
+
+plot(mod_Depth, hull = FALSE, ellipse = F, labels =F)
+
+par (mfrow =c(1,1))
+pdf("~/Desktop/NMDS_Diversity_PA_Jaccard.pdf", bg = "white") # starts writing a PDF to file
+ordiplot(mod_Depth,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
+orditorp(mod_Depth,display="sites",labels =T)
+ordispider(mod_Depth, groups=groups, col = colours,cex=0.6, lwd = 1.5)
+ordihull(mod_Depth,groups=groups,border = colours, col = colours, draw="polygon",label=F, lwd = 1.5)
+# orditorp(mod_Depth,display="species",col="red",air=0.01, cex =1)
+legend(x="topright", y="topleft", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  horiz = F, text.width = 0.2, text.font = 4)
+title ("Jaccard distance - PA")
+dev.off()
+
+
 boxplot (mod_Depth)
 
 # Perform test
@@ -521,7 +545,76 @@ mean$Distances<- round(mean$Distances, digits = 3)
 mean$sd<- round(mean$sd, digits = 3)
 
 # Or 
-with(mod_Depth, tapply(distances, groups, "mean"))
+with(mod_Depth, tapply(distances, groups, "mean")) ## This is the beta-diversity value for the table
+beta_jacc_depth <- with(mod_Depth, tapply(distances, groups, "mean"))
+with(mod_Depth, tapply(distances, groups, "median"))
+
+
+distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
+
+# Display same colours as ordination plots
+colours <- "black"
+# colours <- c("wheat", "aquamarine2","deepskyblue","blue","navyblue","black")
+
+# Red points are average distance to median of betadisper
+ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
+  geom_boxplot(colour = colours) + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
+  ylab ("Distance to median") + xlab ("Depth (m)") + ggtitle ("Jaccard PA") + 
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+                      axis.text = element_text(size=10, colour="black"),
+                      axis.title = element_text(size=11, face="bold", colour="black")) 
+
+
+
+### Beta jaccard-turnover
+# Beta_Depth <- dist (coral.matrices_Depth$beta.jac)
+Beta_jtu_Depth <- coral.matrices_Depth$beta.jtu
+
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",15))
+
+mod_Depth <- betadisper (Beta_jtu_Depth,groups)
+mod_Depth
+
+# Here make the NMDS for Jaccard separating by depths
+plot (mod_Depth)
+# Prepare to plot
+colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
+# 120, 20, 40, 60, 6, 90)
+
+plot(mod_Depth, hull = FALSE, ellipse = F, labels =F)
+
+par (mfrow =c(1,1))
+pdf("~/Desktop/NMDS_Diversity_PA_Jaccard_turn.pdf", bg = "white") # starts writing a PDF to file
+ordiplot(mod_Depth,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
+orditorp(mod_Depth,display="sites",labels =T)
+ordispider(mod_Depth, groups=groups, col = colours,cex=0.6, lwd = 1.5)
+ordihull(mod_Depth,groups=groups,border = colours, col = colours, draw="polygon",label=F, lwd = 1.5)
+# orditorp(mod_Depth,display="species",col="red",air=0.01, cex =1)
+legend(x="topright", y="topleft", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  horiz = F, text.width = 0.2, text.font = 4)
+title ("Jaccard distance (turnover) - PA")
+dev.off()
+
+boxplot (mod_Depth)
+
+# Perform test
+anova(mod_Depth)
+# Permutation test for F
+permutest(mod_Depth, pairwise = TRUE, permutations = 99)
+# Tukey's Honest Significant Differences
+plot (mod.HSD <- TukeyHSD(mod_Depth))
+
+
+distances_centroid <- as.data.frame(mod_Depth$distances)
+colnames (distances_centroid) <- "Distances"
+distances_centroid$Depth <- sapply(strsplit(rownames(distances_centroid), "_"), "[", 1)
+mean <- aggregate (Distances ~ Depth, distances_centroid,"mean")
+sd <- aggregate (Distances ~ Depth, distances_centroid,"sd")
+mean$sd <- sd [2]
+mean$Distances<- round(mean$Distances, digits = 3)
+mean$sd<- round(mean$sd, digits = 3)
+
+# Or 
+with(mod_Depth, tapply(distances, groups, "mean")) ## This is the beta-div turnover value
 with(mod_Depth, tapply(distances, groups, "median"))
 
 distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
@@ -529,10 +622,166 @@ distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20"
 # Red points are average distance to median of betadisper
 ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
   geom_boxplot() + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
-  ylab ("Distance to median") + xlab ("Depth (m)") +
+  ylab ("Distance to median - jturnover") + xlab ("Depth (m)") +
   theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
                       axis.text = element_text(size=10, colour="black"),
                       axis.title = element_text(size=11, face="bold", colour="black")) 
+
+
+### Beta jaccard-nestedness
+# Beta_Depth <- dist (coral.matrices_Depth$beta.jac)
+Beta_nte_Depth <- coral.matrices_Depth$beta.jne
+
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",15))
+
+mod_Depth <- betadisper (Beta_nte_Depth,groups)
+mod_Depth
+
+# Here make the NMDS for Jaccard separating by depths
+plot (mod_Depth)
+# Prepare to plot
+colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
+# 120, 20, 40, 60, 6, 90)
+
+plot(mod_Depth, hull = FALSE, ellipse = F, labels =F)
+
+par (mfrow =c(1,1))
+pdf("~/Desktop/NMDS_Diversity_PA_Jaccard_nest.pdf", bg = "white") # starts writing a PDF to file
+ordiplot(mod_Depth,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
+orditorp(mod_Depth,display="sites",labels =T)
+ordispider(mod_Depth, groups=groups, col = colours,cex=0.6, lwd = 1.5)
+ordihull(mod_Depth,groups=groups,border = colours, col = colours, draw="polygon",label=F, lwd = 1.5)
+# orditorp(mod_Depth,display="species",col="red",air=0.01, cex =1)
+legend(x="topright", y="topleft", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  horiz = F, text.width = 0.2, text.font = 4)
+title ("Jaccard distance (nestedness) - PA")
+dev.off()
+
+boxplot (mod_Depth)
+
+# Perform test
+anova(mod_Depth)
+# Permutation test for F
+permutest(mod_Depth, pairwise = TRUE, permutations = 99)
+# Tukey's Honest Significant Differences
+plot (mod.HSD <- TukeyHSD(mod_Depth))
+
+print (mod_Depth)
+
+
+distances_centroid <- as.data.frame(mod_Depth$distances)
+colnames (distances_centroid) <- "Distances"
+distances_centroid$Depth <- sapply(strsplit(rownames(distances_centroid), "_"), "[", 1)
+mean <- aggregate (Distances ~ Depth, distances_centroid,"mean")
+sd <- aggregate (Distances ~ Depth, distances_centroid,"sd")
+mean$sd <- sd [2]
+mean$Distances<- round(mean$Distances, digits = 3)
+mean$sd<- round(mean$sd, digits = 3)
+
+# Or 
+with(mod_Depth, tapply(distances, groups, "mean"))  ## This is the beta-div nestedness value
+with(mod_Depth, tapply(distances, groups, "median"))
+
+distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
+
+# Red points are average distance to median of betadisper
+ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
+  geom_boxplot() + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
+  ylab ("Distance to median - jnestedness") + xlab ("Depth (m)") +
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+                      axis.text = element_text(size=10, colour="black"),
+                      axis.title = element_text(size=11, face="bold", colour="black")) 
+
+
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",15))
+
+# Mantel tests just for the Jaccard distance from the beta.pair
+#####################################
+###### First measure distances ######
+library (geodist)
+
+Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
+Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
+
+Locations$ID<- with(Locations, paste0(Island, sep = "_", Site))
+
+# Keep only same ID as coral data 
+unique (cast_temp$ID)
+Locations <- Locations[Locations$ID %in% cast_temp$ID, ]
+Locations <- Locations[order(Locations[,'ID']), ]
+
+rownames (Locations) <- Locations$ID
+Locations <- subset (Locations, select =  c(Latitude, Longitude))
+
+dm <- geodist (Locations, measure = "geodesic", paired = T) /1000
+
+dm <- as.data.frame(dm)
+rownames (dm) <-  rownames (Locations)
+names (dm) <- rownames (Locations) 
+###### First measure distances ######
+#####################################
+
+Beta_Depth <- coral.matrices_Depth$beta.jac
+
+Beta_Depth_Matrix <- as.matrix (Beta_Depth)
+# Separate Depth 1 = 6m
+Beta_Depth_Matrix_Depth_1 <- Beta_Depth_Matrix[c(1:16),c(1:16)]
+Beta_Depth_Matrix_Depth_1 <- as.dist(Beta_Depth_Matrix_Depth_1)
+mantel(Beta_Depth_Matrix_Depth_1, dm) # 6m
+# Separate Depth 2 = 20m 
+Beta_Depth_Matrix_Depth_2 <- Beta_Depth_Matrix[c(17:32),c(17:32)]
+Beta_Depth_Matrix_Depth_2 <- as.dist(Beta_Depth_Matrix_Depth_2)
+mantel(Beta_Depth_Matrix_Depth_2, dm) # 20m
+# Separate Depth 3 = 40m
+Beta_Depth_Matrix_Depth_3 <- Beta_Depth_Matrix[c(33:48),c(33:48)]
+Beta_Depth_Matrix_Depth_3 <- as.dist(Beta_Depth_Matrix_Depth_3)
+mantel(Beta_Depth_Matrix_Depth_3, dm) # 40m
+# Separate Depth 4 = 60m 
+Beta_Depth_Matrix_Depth_4 <- Beta_Depth_Matrix[c(49:64),c(49:64)]
+Beta_Depth_Matrix_Depth_4 <- as.dist(Beta_Depth_Matrix_Depth_4)
+mantel(Beta_Depth_Matrix_Depth_4, dm) # 60m
+# Separate Depth 5 = 90m
+Beta_Depth_Matrix_Depth_5 <- Beta_Depth_Matrix[c(65:80),c(65:80)]
+Beta_Depth_Matrix_Depth_5 <- as.dist(Beta_Depth_Matrix_Depth_5)
+mantel(Beta_Depth_Matrix_Depth_5, dm) # 90m
+# Separate Depth 6 = 120m 
+Beta_Depth_Matrix_Depth_6 <- Beta_Depth_Matrix[c(81:95),c(81:95)]
+Beta_Depth_Matrix_Depth_6 <- as.dist(Beta_Depth_Matrix_Depth_6)
+# For 120m, Necessary to change the dimesnsion as I had to remove one site (no corals at all)
+# Necessary to create a new for 120 m because in Tahiti 2 there aren's corals
+dm_120 <- dm
+# Delete columns
+dm_120 <- subset(dm_120, select=-c(Tahiti_2))
+# Delete rows
+row.names.remove <- c("Tahiti_2")
+dm_120 <- dm_120[!(row.names(dm_120) %in% row.names.remove), ]
+# Create distance object again
+dm_120 <- dist (dm_120)
+# Finally the test
+mantel(Beta_Depth_Matrix_Depth_6, dm_120) #
+
+
+
+# Plot of the lm for measuring increase of beta.jac diversity with depth
+boxplot (Beta_Depth_Matrix_Depth_1,Beta_Depth_Matrix_Depth_2, Beta_Depth_Matrix_Depth_3,Beta_Depth_Matrix_Depth_4,Beta_Depth_Matrix_Depth_5, Beta_Depth_Matrix_Depth_6, 
+         xlab = "Depth (m)",
+         ylab = "Beta.bray - Jaccard",
+         names = c("6","20","40","60","90", "120"), 
+         main = "Jaccard distance - PA")
+
+
+# Introduce values manually: 
+beta_jacc_depth # Very important to verify they come from the model considering jaccard (not turnover or nestedness)
+
+beta_div_depth <- data.frame(Depth=c("6", "20", "40", "60", "90", "120"), 
+                             beta_jac=c(0.2698211,0.2491936, 0.2538985, 0.2751023, 0.4701546, 0.3677171))
+
+
+beta_div_depth$Depth <- as.numeric (beta_div_depth$Depth)
+summary (lm(beta_jac~ Depth,beta_div_depth ))
+
+
+
 
 
 ####################################################################################
@@ -784,6 +1033,11 @@ cast_temp[is.na(cast_temp)] <- 0
 cast_temp$Island <- factor(cast_temp$Island, levels = c("Bora","Makatea","Gambier","Moorea","Rangiroa","Raroia","Tahiti","Tikehau"))
 
 cast_all_depth <- cast_temp
+
+cast_all_depth <- cast_temp
+# Necessary for distance afterwards
+cast_temp$ID <- with(cast_temp, paste0(Island,  sep = "_", Island_Site))
+
 cast_all_depth$ID<- with(cast_all_depth, paste0(Depth, sep = "_",  Island,  sep = "_", Island_Site))
 rownames (cast_all_depth) <- cast_all_depth$ID
 
@@ -797,6 +1051,8 @@ cast_all_depth <- cast_all_depth[rowSums(cast_all_depth[,])>0, ]
 coral.matrices_Depth <- beta.pair.abund(cast_all_depth, index.family = "bray")
 mean (coral.matrices_Depth$beta.bray)
 
+
+### Beta bray-
 # Beta_Depth <- dist (coral.matrices_Depth$beta.bray)
 Beta_Depth <- coral.matrices_Depth$beta.bray
 
@@ -805,7 +1061,92 @@ groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",
 mod_Depth <- betadisper (Beta_Depth,groups)
 mod_Depth
 
+# Here make the NMDS for Bray separating by depths
 plot (mod_Depth)
+# Prepare to plot
+colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
+# 120, 20, 40, 60, 6, 90)
+
+plot(mod_Depth, hull = FALSE, ellipse = F, labels =F)
+
+par (mfrow =c(1,1))
+pdf("~/Desktop/NMDS_Diversity_Occupancy_Bray.pdf", bg = "white") # starts writing a PDF to file
+ordiplot(mod_Depth,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
+orditorp(mod_Depth,display="sites",labels =T)
+ordispider(mod_Depth, groups=groups, col = colours,cex=0.6, lwd = 1.5)
+ordihull(mod_Depth,groups=groups,border = colours, col = colours, draw="polygon",label=F, lwd = 1.5)
+# orditorp(mod_Depth,display="species",col="red",air=0.01, cex =1)
+legend(x="topright", y="topleft", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  horiz = F, text.width = 0.2, text.font = 4)
+title ("Bray distance - Occupancy")
+dev.off()
+
+boxplot (mod_Depth)
+
+# Perform test
+anova(mod_Depth)
+# Permutation test for F
+permutest(mod_Depth, pairwise = TRUE, permutations = 99)
+# Tukey's Honest Significant Differences
+plot (mod.HSD <- TukeyHSD(mod_Depth))
+
+
+distances_centroid <- as.data.frame(mod_Depth$distances)
+colnames (distances_centroid) <- "Distances"
+distances_centroid$Depth <- sapply(strsplit(rownames(distances_centroid), "_"), "[", 1)
+mean <- aggregate (Distances ~ Depth, distances_centroid,"mean")
+sd <- aggregate (Distances ~ Depth, distances_centroid,"sd")
+mean$sd <- sd [2]
+mean$Distances<- round(mean$Distances, digits = 3)
+mean$sd<- round(mean$sd, digits = 3)
+
+# Or 
+with(mod_Depth, tapply(distances, groups, "mean"))
+beta_bray_depth <- with(mod_Depth, tapply(distances, groups, "mean"))
+with(mod_Depth, tapply(distances, groups, "median"))
+
+distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
+
+# Display same colours as ordination plots
+colours <- "black"
+# colours <- c("wheat", "aquamarine2","deepskyblue","blue","navyblue","black")
+
+
+# Red points are average distance to median of betadisper
+ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
+  geom_boxplot() + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
+  ylab ("Distance to median - Bray") + xlab ("Depth (m)") + ggtitle ("Occupancy") +
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+                      axis.text = element_text(size=10, colour="black"),
+                      axis.title = element_text(size=11, face="bold", colour="black"))  
+
+
+### Beta balance turnover
+Beta_Depth <- coral.matrices_Depth$beta.bray.bal
+
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",15))
+
+mod_Depth <- betadisper (Beta_Depth,groups)
+mod_Depth
+
+# Here make the NMDS for Bray separating by depths
+plot (mod_Depth)
+# Prepare to plot
+colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
+# 120, 20, 40, 60, 6, 90)
+
+plot(mod_Depth, hull = FALSE, ellipse = F, labels =F)
+
+par (mfrow =c(1,1))
+pdf("~/Desktop/NMDS_Diversity_Occupancy_Bray_balance.pdf", bg = "white") # starts writing a PDF to file
+ordiplot(mod_Depth,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
+orditorp(mod_Depth,display="sites",labels =T)
+ordispider(mod_Depth, groups=groups, col = colours,cex=0.6, lwd = 1.5)
+ordihull(mod_Depth,groups=groups,border = colours, col = colours, draw="polygon",label=F, lwd = 1.5)
+# orditorp(mod_Depth,display="species",col="red",air=0.01, cex =1)
+legend(x="topright", y="topleft", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  horiz = F, text.width = 0.2, text.font = 4)
+title ("Bray balance distance - Occupancy")
+dev.off()
+
 boxplot (mod_Depth)
 
 # Perform test
@@ -831,15 +1172,174 @@ with(mod_Depth, tapply(distances, groups, "median"))
 
 distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
 
+# Display same colours as ordination plots
+colours <- "black"
+# colours <- c("wheat", "aquamarine2","deepskyblue","blue","navyblue","black")
+
+
 # Red points are average distance to median of betadisper
 ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
   geom_boxplot() + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
-  ylab ("Distance to median") + xlab ("Depth (m)") +
+  ylab ("Distance to median - Balance") + xlab ("Depth (m)") + ggtitle ("Bray Balance Occupancy") +
   theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
                       axis.text = element_text(size=10, colour="black"),
                       axis.title = element_text(size=11, face="bold", colour="black"))  
 
 
+### Beta gradient nestedness
+Beta_Depth <- coral.matrices_Depth$beta.bray.gra
+
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",15))
+
+mod_Depth <- betadisper (Beta_Depth,groups)
+mod_Depth
+
+# Here make the NMDS for Bray separating by depths
+plot (mod_Depth)
+# Prepare to plot
+colours <- c("black", "aquamarine2","deepskyblue","blue","wheat","navyblue")
+# 120, 20, 40, 60, 6, 90)
+
+plot(mod_Depth, hull = FALSE, ellipse = F, labels =F)
+
+par (mfrow =c(1,1))
+pdf("~/Desktop/NMDS_Diversity_Occupancy_Bray_gradient.pdf", bg = "white") # starts writing a PDF to file
+ordiplot(mod_Depth,type="n", choices = c(1,2)) # Check with numbers and see if I can get three axes
+orditorp(mod_Depth,display="sites",labels =T)
+ordispider(mod_Depth, groups=groups, col = colours,cex=0.6, lwd = 1.5)
+ordihull(mod_Depth,groups=groups,border = colours, col = colours, draw="polygon",label=F, lwd = 1.5)
+# orditorp(mod_Depth,display="species",col="red",air=0.01, cex =1)
+legend(x="topright", y="topleft", legend=c ("120m","90m","60m", "40m","20m","6m"), col=c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"), fill = c("black", "navyblue","blue","deepskyblue","aquamarine2","wheat"),  horiz = F, text.width = 0.2, text.font = 4)
+title ("Bray gradient distance - Occupancy")
+dev.off()
+
+boxplot (mod_Depth)
+
+# Perform test
+anova(mod_Depth)
+# Permutation test for F
+permutest(mod_Depth, pairwise = TRUE, permutations = 99)
+# Tukey's Honest Significant Differences
+plot (mod.HSD <- TukeyHSD(mod_Depth))
+
+
+distances_centroid <- as.data.frame(mod_Depth$distances)
+colnames (distances_centroid) <- "Distances"
+distances_centroid$Depth <- sapply(strsplit(rownames(distances_centroid), "_"), "[", 1)
+mean <- aggregate (Distances ~ Depth, distances_centroid,"mean")
+sd <- aggregate (Distances ~ Depth, distances_centroid,"sd")
+mean$sd <- sd [2]
+mean$Distances<- round(mean$Distances, digits = 3)
+mean$sd<- round(mean$sd, digits = 3)
+
+# Or 
+with(mod_Depth, tapply(distances, groups, "mean"))
+with(mod_Depth, tapply(distances, groups, "median"))
+
+distances_centroid$Depth = factor(distances_centroid$Depth,levels = c ("6", "20", "40", "60", "90", "120"))
+
+# Display same colours as ordination plots
+colours <- "black"
+# colours <- c("wheat", "aquamarine2","deepskyblue","blue","navyblue","black")
+
+
+# Red points are average distance to median of betadisper
+ggplot(data = distances_centroid, aes(y = Distances, x = Depth)) + 
+  geom_boxplot() + geom_point (data = mean, aes(y = Distances, x = Depth), colour = "red", size = 3) + 
+  ylab ("Distance to median - Gradient") + xlab ("Depth (m)") + ggtitle ("Bray Gradient Occupancy") +
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+                      axis.text = element_text(size=10, colour="black"),
+                      axis.title = element_text(size=11, face="bold", colour="black"))
+
+
+groups <- c(rep("6M",16),rep("20M",16), rep("40M",16), rep("60M",16), rep("90M",16), rep("120M",15))
+
+# Mantel tests just for the Bray distance from the beta.pair
+#####################################
+###### First measure distances ######
+library (geodist)
+
+Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
+Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
+
+Locations$ID<- with(Locations, paste0(Island, sep = "_", Site))
+
+# Keep only same ID as coral data 
+unique (cast_temp$ID)
+Locations <- Locations[Locations$ID %in% cast_temp$ID, ]
+Locations <- Locations[order(Locations[,'ID']), ]
+
+rownames (Locations) <- Locations$ID
+Locations <- subset (Locations, select =  c(Latitude, Longitude))
+
+dm <- geodist (Locations, measure = "geodesic", paired = T) /1000
+
+dm <- as.data.frame(dm)
+rownames (dm) <-  rownames (Locations)
+names (dm) <- rownames (Locations) 
+###### First measure distances ######
+#####################################
+
+
+Beta_Depth <- coral.matrices_Depth$beta.bray
+
+Beta_Depth_Matrix <- as.matrix (Beta_Depth)
+# Separate Depth 1 = 6m
+Beta_Depth_Matrix_Depth_1 <- Beta_Depth_Matrix[c(1:16),c(1:16)]
+Beta_Depth_Matrix_Depth_1 <- as.dist(Beta_Depth_Matrix_Depth_1)
+mantel(Beta_Depth_Matrix_Depth_1, dm) # 6m
+# Separate Depth 2 = 20m 
+Beta_Depth_Matrix_Depth_2 <- Beta_Depth_Matrix[c(17:32),c(17:32)]
+Beta_Depth_Matrix_Depth_2 <- as.dist(Beta_Depth_Matrix_Depth_2)
+mantel(Beta_Depth_Matrix_Depth_2, dm) # 20m
+# Separate Depth 3 = 40m
+Beta_Depth_Matrix_Depth_3 <- Beta_Depth_Matrix[c(33:48),c(33:48)]
+Beta_Depth_Matrix_Depth_3 <- as.dist(Beta_Depth_Matrix_Depth_3)
+mantel(Beta_Depth_Matrix_Depth_3, dm) # 40m
+# Separate Depth 4 = 60m 
+Beta_Depth_Matrix_Depth_4 <- Beta_Depth_Matrix[c(49:64),c(49:64)]
+Beta_Depth_Matrix_Depth_4 <- as.dist(Beta_Depth_Matrix_Depth_4)
+mantel(Beta_Depth_Matrix_Depth_4, dm) # 60m
+# Separate Depth 5 = 90m
+Beta_Depth_Matrix_Depth_5 <- Beta_Depth_Matrix[c(65:80),c(65:80)]
+Beta_Depth_Matrix_Depth_5 <- as.dist(Beta_Depth_Matrix_Depth_5)
+mantel(Beta_Depth_Matrix_Depth_5, dm) # 90m
+# Separate Depth 6 = 120m 
+Beta_Depth_Matrix_Depth_6 <- Beta_Depth_Matrix[c(81:95),c(81:95)]
+Beta_Depth_Matrix_Depth_6 <- as.dist(Beta_Depth_Matrix_Depth_6)
+# For 120m, Necessary to change the dimesnsion as I had to remove one site (no corals at all)
+# Necessary to create a new for 120 m because in Tahiti 2 there aren's corals
+dm_120 <- dm
+# Delete columns
+dm_120 <- subset(dm_120, select=-c(Tahiti_2))
+# Delete rows
+row.names.remove <- c("Tahiti_2")
+dm_120 <- dm_120[!(row.names(dm_120) %in% row.names.remove), ]
+# Create distance object again
+dm_120 <- dist (dm_120)
+# Finally the test
+mantel(Beta_Depth_Matrix_Depth_6, dm_120) #
+
+
+
+# Plot of the lm for measuring increase of beta.bray diversity with depth
+boxplot (Beta_Depth_Matrix_Depth_1,Beta_Depth_Matrix_Depth_2, Beta_Depth_Matrix_Depth_3,Beta_Depth_Matrix_Depth_4,Beta_Depth_Matrix_Depth_5, Beta_Depth_Matrix_Depth_6, 
+         xlab = "Depth (m)",
+         ylab = "Beta.bray",
+         names = c("6","20","40","60","90", "120"), 
+         main = "Bray distance - Occupancy")
+
+
+# Introduce values manually: 
+beta_bray_depth # Very important to verify they come from the model considering jaccard (not turnover or nestedness)
+
+beta_div_depth <- data.frame(Depth=c("6", "20", "40", "60", "90", "120"), 
+                             beta_bray=c(0.1973027,0.2242932, 0.3139426, 0.2987933, 0.3681515, 0.4483688))
+
+
+beta_div_depth$Depth <- as.numeric (beta_div_depth$Depth)
+summary (lm(beta_bray~ Depth,beta_div_depth ))
 
 
 
