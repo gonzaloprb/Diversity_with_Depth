@@ -240,7 +240,7 @@ cast_temp <- cast_temp[rowSums(cast_temp[,])>0, ]
 
 # View (cast_temp)
 
-# As I am working with the occupancy, "Frequency"
+# Working with PA only 
 PA_NMDS <- metaMDS(cast_temp, k=2, trymax = 1000, distance = "jaccard") 
 
 # Prepare to plot
@@ -722,6 +722,7 @@ names (dm) <- rownames (Locations)
 #####################################
 
 Beta_Depth <- coral.matrices_Depth$beta.jac
+# Beta_Depth <- coral.matrices_Depth$beta.jtu
 
 Beta_Depth_Matrix <- as.matrix (Beta_Depth)
 # Separate Depth 1 = 6m
