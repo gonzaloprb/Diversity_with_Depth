@@ -775,7 +775,8 @@ beta_div_depth   # This is the value for the table
 
 library (geodist)
 
-Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Data")
+Locations <- read.csv(file = "Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
 Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
 Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
 
@@ -1262,7 +1263,8 @@ beta_div_depth
 ###### First measure distances ######
 library (geodist)
 
-Locations <- read.csv(file = "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/GIS_MAP/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Data")
+Locations <- read.csv(file = "Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
 Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
 Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
 
