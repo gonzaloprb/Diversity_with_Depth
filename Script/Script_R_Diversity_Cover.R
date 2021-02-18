@@ -11,7 +11,7 @@ require (betapart); library (car); library (MASS); library (glmm); library (glmn
 require (ggpubr); library (cowplot); library (patchwork)
 
 
-# Mid-domain effect (there's no mid-domain effect)
+# Mid-domain effect (there's no mid-domain effect) 
 require(devtools)
 library(reshape2) 
 

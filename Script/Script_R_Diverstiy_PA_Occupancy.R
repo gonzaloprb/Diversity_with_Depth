@@ -1261,7 +1261,7 @@ beta_div_depth
 # Mantel tests just for the Bray distance from the beta.pair
 #####################################
 ###### First measure distances ######
-library (geodist)
+library (geodist) 
 
 setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Data")
 Locations <- read.csv(file = "Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
