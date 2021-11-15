@@ -4,14 +4,13 @@
 
 rm (list = ls()) 
 
-par(mfrow=c(1,1))
+par(mfrow=c(1,1)) 
 
 library (ggplot2); library (data.table); library  (stats); library (dynRB); library(dplyr); library (matrixStats); library(plyr); library (stringr)
 library (vegan); library (goeveg); library (reshape2); library (scatterplot3d); library(betapart)
 
 # From the beggining once again 
-setwd("~/Documents/AAASea_Science/Publications/Coral Dynamics of French Polynesia/Final_Data_Scripts_Figures_Gonzalo")
-poly_mana <- read.csv(file = "Benthos_Polynesia_Mana_new_June.csv", header = T, dec = ".", sep = ";")
+poly_mana <- read.csv(file = "Data/External_data_Poly_Mana/Benthos_Polynesia_Mana_new_June.csv", header = T, dec = ".", sep = ";")
 poly_mana <- data.table(poly_mana, keep.rownames=FALSE, check.names=FALSE, key=NULL)
 
 # Keep only islands we want
