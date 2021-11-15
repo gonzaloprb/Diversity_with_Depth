@@ -3,8 +3,9 @@
 #   title: "Script_Diversity_Stats"   
 
 
-# Script also pushed on Github: https://github.com/gonzaloprb/Diverstiy-with-Depth
+# Script also pushed on Github: https://github.com/gonzaloprb/PhD_Diversity_Depth
 
+ 
 # Install.packages
 library(scatterplot3d); library(reshape); library (reshape2); library (data.table); library(RColorBrewer); library(dplyr); library (tidyr); library (plyr); library (ggplot2); require (vegan); require (goeveg);   require  (stats); require (dynRB); require (matrixStats); require(plyr); require (stringr);require (reshape2); require(gridExtra)
 require (betapart); library (car); library (MASS); library (glmm); library (glmnet); library (glmmTMB); library (lme4); library(randomcoloR)
@@ -20,8 +21,7 @@ require (geodist)
 
 # rm (list = ls()) 
 # Set working directory etc.
-setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Data")
-rndpts_df <- read.csv(file = "photoquad_rndpts_DEEPHOPE.csv", header = T, dec = ".", sep = ",", row.names = 1)
+rndpts_df <- read.csv(file = "Data/photoquad_rndpts_DEEPHOPE.csv", header = T, dec = ".", sep = ",", row.names = 1)
 
 rndpts_df$Island <- gsub("Mangareva", "Gambier", rndpts_df$Island)
 
@@ -32,7 +32,7 @@ rndpts_df <- subset (rndpts_df, select = - c(Cattegory, Coral_form))
 rndpts_df <- aggregate (Cover ~ Unique_Image_ID + Date + Site + Archipelago + Island + Island_Site + Depth + Quadrat + Coral_genus, rndpts_df , sum)
 
 
-data <- read.csv(file = "photoquad_rndpts_DEEPHOPE.csv", header = T, dec = ".", sep = ",", row.names = 1)
+data <- read.csv(file = "Data/photoquad_rndpts_DEEPHOPE.csv", header = T, dec = ".", sep = ",", row.names = 1)
 
 data$Island <- gsub("Mangareva", "Gambier", data$Island)
 # We want to keep all quadrats
@@ -1754,8 +1754,7 @@ summary (lm(beta_bray_gra ~ Depth,beta_div_depth ))
 #####################################
 ###### First measure distances ######
 library (geodist)
-setwd("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Data")
-Locations <- read.csv(file = "Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
+Locations <- read.csv(file = "Data/Deephope_sampling_locations_RAN*.csv", header = T, dec = ".", sep = ";", row.names = 1)
 Locations$Island <- gsub("Mangareva", "Gambier", Locations$Island)
 Locations$Island <- gsub("Bora Bora", "Bora", Locations$Island)
 
