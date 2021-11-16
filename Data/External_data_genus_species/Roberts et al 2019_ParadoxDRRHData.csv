@@ -1,0 +1,111 @@
+﻿Species;Min Depth;Max Depth;Min 20% limit;Max 20% limit;Min 60% limit;Max 60% limit;DRRH Criteria A;DRRH Criteria B;DRRH Criteria C;DRRH Criteria D
+Acropora 1;2;9.2;0.5;8.5;0.5;6;FAIL; FAIL; FAIL; FAIL
+Acropora 3;18;44.6;23;45;27;45;FAIL; FAIL; FAIL; FAIL
+Acropora 5;8.2;42.8;11;35;13.5;24;PASS; FAIL; FAIL; FAIL
+Acropora batunai;9.8;38.7;12;35.5;18;29.5;PASS; FAIL; FAIL; FAIL
+Acropora caroliniana;11.5;43.8;16.5;41.5;22.5;35.5;FAIL; FAIL; FAIL; FAIL
+Acropora cerealis;3.9;18.6;0.5;18.5;5;14.5;FAIL; FAIL; FAIL; FAIL
+Acropora desalwii;7.7;43.2;8;45;9;26;PASS;PASS;PASS; FAIL
+Acropora divaricata;2.2;18.3;0.5;15;4;11.5;FAIL; FAIL; FAIL; FAIL
+Acropora echinata;4.5;34.1;10.5;32.5;16;27.5;PASS; FAIL; FAIL; FAIL
+Acropora florida;1.8;23;0.5;23;0.5;17;FAIL; FAIL; FAIL; FAIL
+Acropora granulosa;4.9;44.3;12;45;20;37;PASS; FAIL; FAIL; FAIL
+Acropora intermedia;1.2;17;0.5;10;0.5;3.5;FAIL; FAIL; FAIL; FAIL
+Acropora jacquelineae;6.8;42;6.5;45;9.5;45;PASS;PASS;PASS;PASS
+Acropora kimbeensis;2.8;33.8;5;20.5;9;16.5;PASS; FAIL; FAIL; FAIL
+Acropora loripes;3.8;38.7;4;23;5;12;PASS; FAIL; FAIL; FAIL
+Acropora pichoni;28.3;43.6;29;44.5;31;38.5;FAIL; FAIL; FAIL; FAIL
+Acropora plumosa;2.3;28.8;0.5;29;13.5;26.5;FAIL; FAIL; FAIL; FAIL
+Acropora sarmentosa;2.3;21.7;0.5;20;0.5;15;FAIL; FAIL; FAIL; FAIL
+Acropora selago;3.8;28.6;2;24;7.5;18.5;FAIL; FAIL; FAIL; FAIL
+Acropora subglabra;7.2;41.2;8;30;10.5;19.5;PASS; FAIL; FAIL; FAIL
+Acropora valida;1.5;18.9;0.5;9.5;0.5;3;FAIL; FAIL; FAIL; FAIL
+Acropora walindii;18.2;41.5;20;40;24.5;35;FAIL; FAIL; FAIL; FAIL
+Anacropora forbesi;3.6;39.6;0.5;31.5;6;23.5;PASS;PASS;PASS; FAIL
+Anacropora puertogalerae;3.8;34.2;0.5;34.5;0.5;32.5;PASS;PASS;PASS;PASS
+Astreopora myriophthalma;6.9;38.5;6;30.5;6.5;15.5;PASS;PASS;PASS; FAIL
+Ctenactis echinata;2.9;34.1;0.5;24;4;14.5;PASS; FAIL; FAIL; FAIL
+Cyphastrea chalcidicum;4.9;43.8;0.5;45;24.5;45;PASS;PASS; FAIL;PASS
+Cyphastrea microphthalma;8.6;44.3;15;45;22;45;PASS; FAIL; FAIL; FAIL
+Cyphastrea serailia;8.9;44.2;28;45;39.5;45;PASS; FAIL; FAIL; FAIL
+Danafungia horrida;1.9;43.8;0.5;36;0.5;12;PASS;PASS;PASS; FAIL
+Danafungia scruposa;3;43.4;0.5;28;0.5;9;PASS; FAIL; FAIL; FAIL
+Diploastrea heliopora;3.6;27.3;0.5;28;0.5;27.5;FAIL; FAIL; FAIL; FAIL
+Dipsastraea matthaii;4;45;6.5;45;25.5;42;PASS;PASS; FAIL;PASS
+Dipsastraea pallida;1.9;44;0.5;37;0.5;12;PASS;PASS;PASS; FAIL
+Dipsastraea speciosa;1.8;44.6;3;45;12.5;45;PASS;PASS; FAIL;PASS
+Echinophyllia aspera;4.4;43.5;24.5;45;38.5;45;PASS; FAIL; FAIL; FAIL
+Echinopora horrida;1.8;26.8;0.5;12;0.5;4;FAIL; FAIL; FAIL; FAIL
+Echinopora lamellosa;1.9;44.9;0.5;45;0.5;31.5;PASS;PASS;PASS;PASS
+Echinopora mammiformis;3.8;44;5;45;10;21;PASS;PASS;PASS; FAIL
+Favites abdita;2.5;34.4;0.5;35.5;0.5;35;PASS;PASS;PASS;PASS
+Favites halicora;3.2;44;5;45;14.5;45;PASS;PASS; FAIL;PASS
+Fungia fungites;2.2;43.8;2;41;2.5;17;PASS;PASS;PASS; FAIL
+Galaxea astreata;4.1;44.1;0.5;42.5;24.5;41;PASS;PASS; FAIL;PASS
+Galaxea fascicularis;1.8;38.3;0.5;31;3;22;PASS;PASS;PASS; FAIL
+Goniastrea 1;3.9;44.9;21.5;45;31.5;45;PASS; FAIL; FAIL; FAIL
+Goniastrea edwardsi;2.8;39;0.5;44;0.5;14;PASS;PASS;PASS; FAIL
+Goniastrea pectinata;2.2;44.4;6.5;45;12.5;37.5;PASS;PASS; FAIL;PASS
+Halomitra clavator;7.5;43;9;39.5;16;32;PASS;PASS; FAIL;PASS
+Hydnophora exesa;2.8;43.8;7.5;45;11.5;45;PASS;PASS; FAIL;PASS
+Hydnophora grandis;1.6;37.8;0.5;20;0.5;6.5;PASS; FAIL; FAIL; FAIL
+Hydnophora rigida;1.7;22.8;2;11;3;6.5;FAIL; FAIL; FAIL; FAIL
+Isopora brueggemanni;3.7;31.5;4.5;27;10;21.5;PASS; FAIL; FAIL; FAIL
+Isopora palifera;1.6;14.3;0.5;8;0.5;3;FAIL; FAIL; FAIL; FAIL
+Leptastrea purpurea;2.2;44.9;7;45;44.5;45;PASS;PASS; FAIL;PASS
+Leptastrea transversa;4.2;44;5;45;8;45;PASS;PASS;PASS;PASS
+Leptoseris foliosa;29.6;44.5;36;45;42;45;FAIL; FAIL; FAIL; FAIL
+Leptoseris incrustans;14;44.7;32;45;40.5;45;FAIL; FAIL; FAIL; FAIL
+Leptoseris scabra;12.6;44.8;27.5;45;39;45;FAIL; FAIL; FAIL; FAIL
+Leptoseris striata;28.1;43.6;31;45;35;43.5;FAIL; FAIL; FAIL; FAIL
+Leptoseris tube_scabra;6.2;45;22;45;37.5;45;PASS; FAIL; FAIL; FAIL
+Lobophyllia hemprichii;2.3;44.1;4;45;15;38.5;PASS;PASS; FAIL;PASS
+Merulina ampliata;2.2;44;2;45;7;30.5;PASS;PASS;PASS;PASS
+Merulina scabricula;2.9;42.4;0.5;38.5;0.5;32.5;PASS;PASS;PASS;PASS
+Montipora 1;26.7;44.1;35.5;45;42;45;FAIL; FAIL; FAIL; FAIL
+Montipora 4;2;44.5;17;45;25.5;43.5;PASS; FAIL; FAIL; FAIL
+Montipora aequituberculata;1.3;28;0.5;11.5;0.5;4;FAIL; FAIL; FAIL; FAIL
+Montipora danae;8.7;43.2;12;33.5;15;24.5;PASS; FAIL; FAIL; FAIL
+Montipora grisea;2.2;32.2;0.5;28;0.5;21.5;PASS; FAIL; FAIL; FAIL
+Montipora informis;7.5;37.5;11;33;16.5;27.5;PASS; FAIL; FAIL; FAIL
+Montipora verrucosa;8.6;42.5;9;37;12;24.5;PASS;PASS; FAIL; FAIL
+Mycedium elephantotus;2.4;44.9;24.5;45;37.5;45;PASS; FAIL; FAIL; FAIL
+Mycedium mancaoi;16.5;41;23;42.5;27.5;37.5;FAIL; FAIL; FAIL; FAIL
+Mycedium robokaki;4.4;44.5;19.5;45;37;45;PASS; FAIL; FAIL; FAIL
+Oxypora lacera;4.1;44.4;23.5;45;38;45;PASS; FAIL; FAIL; FAIL
+Pachyseris foliosa;3.1;38.2;8;30;11.5;21.5;PASS; FAIL; FAIL; FAIL
+Pachyseris gemmae;4.2;44.2;6.5;45;12;45;PASS;PASS; FAIL;PASS
+Pachyseris speciosa;8;44.9;20.5;45;29;45;PASS; FAIL; FAIL; FAIL
+Parascolymia vitiensis;7.8;44.1;24.5;43;29;38.5;PASS; FAIL; FAIL; FAIL
+Pavona cactus;4.2;32.2;5.5;25.5;10.5;20.5;PASS; FAIL; FAIL; FAIL
+Pavona explanulata;4;43.8;1.5;45;31;45;PASS;PASS; FAIL;PASS
+Pavona varians;2.5;44.5;3.5;45;14.5;38.5;PASS;PASS; FAIL;PASS
+Pavona venosa;1.8;43.7;0.5;45;0.5;24;PASS;PASS;PASS; FAIL
+Pectinia 1;22.3;44.7;31;45;37;45;FAIL; FAIL; FAIL; FAIL
+Pectinia paeonia;8.8;41.8;8;45;9;45;PASS;PASS;PASS;PASS
+Physogyra lichtensteini;4.2;38.6;0.5;45;10.5;35.5;PASS;PASS; FAIL;PASS
+Platygyra sinensis;1.5;37.9;0.5;37;0.5;12;PASS;PASS;PASS; FAIL
+Pocillopora acuta;13.7;44.3;14.5;45;17.5;45;FAIL; FAIL; FAIL; FAIL
+Pocillopora damicornis;1.7;37.2;0.5;18;0.5;6.5;PASS; FAIL; FAIL; FAIL
+Pocillopora verrucosa;2.1;27.6;0.5;17.5;0.5;5.5;FAIL; FAIL; FAIL; FAIL
+Porites 1;4.3;45;11.5;45;20;45;PASS; FAIL; FAIL; FAIL
+Porites 2;3.9;32.7;5.5;23.5;7;14;PASS; FAIL; FAIL; FAIL
+Porites 3;1.6;38.8;0.5;14.5;0.5;5;PASS; FAIL; FAIL; FAIL
+Porites 4;2.6;23.5;1.5;24;7;18.5;FAIL; FAIL; FAIL; FAIL
+Porites 5;4.2;43.5;0.5;45;27;39;PASS;PASS; FAIL;PASS
+Porites annae;2.1;32.7;0.5;11.5;0.5;9.5;PASS; FAIL; FAIL; FAIL
+Porites australiensis;1.6;23.5;0.5;11.5;0.5;4.5;FAIL; FAIL; FAIL; FAIL
+Porites cylindrica;2.5;19.5;0.5;20.5;0.5;19.5;FAIL; FAIL; FAIL; FAIL
+Porites lobata;1.1;33.6;0.5;33;0.5;32;PASS;PASS;PASS;PASS
+Porites lutea;3.9;42.8;5;36.5;11;31.5;PASS;PASS; FAIL;PASS
+Porites negrosensis;1.7;23.1;0.5;17.5;0.5;13;FAIL; FAIL; FAIL; FAIL
+Porites nigrescens;1.6;38.3;2;30;4.5;16.5;PASS; FAIL; FAIL; FAIL
+Porites rus;1.6;45;0.5;45;6.5;33.5;PASS;PASS;PASS;PASS
+Porites solida;1.7;23.9;0.5;11.5;0.5;4;FAIL; FAIL; FAIL; FAIL
+Psammocora nierstraszi;3.2;44.1;0.5;45;28.5;44;PASS;PASS; FAIL;PASS
+Psammocora profundacella;4.6;43.1;5.5;45;9.5;45;PASS;PASS;PASS;PASS
+Seriatopora caliendrum;1.6;33.1;0.5;21;3.5;12.5;PASS; FAIL; FAIL; FAIL
+Seriatopora dendritica;11.9;42.8;16;43.5;23;36.5;FAIL; FAIL; FAIL; FAIL
+Seriatopora guttatus;2.7;38.2;0.5;33;6.5;25;PASS;PASS;PASS; FAIL
+Seriatopora hystrix;2.1;44.4;0.5;45;20.5;39;PASS;PASS; FAIL;PASS
+Stylophora pistillata;1.4;41.8;0.5;44.5;0.5;36.5;PASS;PASS;PASS;PASS
