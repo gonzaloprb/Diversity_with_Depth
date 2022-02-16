@@ -1,7 +1,6 @@
 # rm (list = ls())
 
-#   title: "Script_Diversity_Stats"   
-
+#   title: "Script_Diversity_Cover"   
 
 # Script also pushed on Github: https://github.com/gonzaloprb/PhD_Diversity_Depth
 
@@ -42,7 +41,9 @@ data <- data %>% separate(Coral_Genus_Form,  c("Coral_genus", "Coral_form"), " "
 
 data <- aggregate (Cover ~ Unique_Image_ID + Date + Site + Archipelago + Island + Island_Site + Depth + Quadrat + Cattegory +  Coral_genus, data , sum)
 
-data <- ddply(data, ~ Archipelago ~ Island +Island_Site + Depth + Cattegory + Coral_genus, function(x){c(Cover = sum(x$Cover)/30) })
+data_df <- data
+
+data <- ddply(data, ~ Archipelago + Island +Island_Site + Depth + Cattegory + Coral_genus, function(x){c(Cover = sum(x$Cover)/30) })
 
 coral_data <- data
 
@@ -54,6 +55,8 @@ coral_data <- data
 # Plot considering the effect of Island and Island_Site to see the effect of depth
 # Calculate sum for coral cover in function of site and depth for a quick interpretation and plot
 coral_cover <- aggregate (Cover ~ Island + Island_Site + Depth, coral_data , sum)
+# For keeping quadrats - perhaps unnecessary
+data_df <- aggregate (Cover ~ Island + Island_Site + Quadrat +  Depth, data_df , sum)
 
 # Transform depth as a Qualitative variable  
 coral_cover$Depth <- as.factor(as.character(coral_cover$Depth))
@@ -78,6 +81,13 @@ coral_cover2$Depth <- as.numeric (as.character(coral_cover2$Depth))
 coral_cover2$Island_Site <- as.character(coral_cover2$Island_Site)
 coral_cover2$Island_Site_2 <- paste(coral_cover2$Island, "_", coral_cover2$Island_Site)
 
+#### Keeping quadrats - perhaps unnecessary ####
+data_df2 <- data_df
+data_df2$Depth <- as.numeric (as.character(data_df2$Depth))
+data_df2$Island_Site <- as.character(data_df2$Island_Site)
+data_df2$Island_Site_2 <- paste(data_df2$Island, "_", data_df2$Island_Site)
+#### Keeping quadrats - perhaps unnecessary ####
+
 # Test of different models 
 # lm_1 <- lm(Cover ~  Depth, data = coral_cover2) 
 # summary (lm_1)
@@ -89,25 +99,39 @@ summary (lm_2)
 # Mixed model with depth as fixed factor and Island_Site as Random
 # Convergence code: 0 means no error
 
-mixed.lmer <- lmer(Cover ~ Depth + (1|Island_Site_2), data = coral_cover2)
+mixed.lmer.full <- lmer(Cover ~ Depth +   (1|Island_Site_2), data = coral_cover2, REML = TRUE)
+mixed.lmer <- lmer(Cover ~  (1|Island_Site_2),data = coral_cover2, REML = TRUE)
 
-# mixed.lmer <- lmer(Cover ~ log(Depth) + (1|Island_Site_2), data = coral_cover2) 
-summary(mixed.lmer)
-anova (mixed.lmer)
-coef(mixed.lmer)
+#### Keeping quadrats - it gives the same ####
+mixed.lmer.quadrats.full <- lmer(Cover ~ Depth +   (1|Island_Site_2), data = data_df2, REML = TRUE)
+mixed.lmer.quadrats <- lmer(Cover ~  (1|Island_Site_2),data = data_df2, REML = TRUE)
+#### Keeping quadrats - it gives the same ####
+
+
+# Testing nested structure! According to AIC better without the nested structure. 
+AIC(lmer(Cover ~ (1|Island_Site_2/Island), data = coral_cover2, REML = TRUE)) # Nested effect. Higher AIC and give a warning! Better without nested structure
+AIC(lmer(Cover ~ (1|Island_Site_2), data = coral_cover2, REML = TRUE))
+
+# Getting the p-value for depth!
+anova(mixed.lmer.full,mixed.lmer)
+
+shapiro.test(residuals(mixed.lmer.full))
+
+plot(mixed.lmer.full)
+
+
+summary(mixed.lmer.full)
+anova (mixed.lmer.full)
+coef(mixed.lmer.full)
 
 # No variance as Site is only considered as random intercept
-plot(mixed.lmer) # Data a bit structured. I am not sure if this is good. 
-qqnorm(resid(mixed.lmer))
-qqline(resid(mixed.lmer))
+plot(mixed.lmer.full) # Data is okay! The deviaition of the residuals stays kind of constant
+qqnorm(resid(mixed.lmer.full))
+qqline(resid(mixed.lmer.full))
 # Check singularity
-# diag.vals <- getME(mixed.lmer,"theta")[getME(mixed.lmer,"lower") == 0]
+# diag.vals <- getME(mixed.lmer.full,"theta")[getME(mixed.lmer.full,"lower") == 0]
 # any(diag.vals < 1e-6) # FALSE
 
-# P-values og glmer
-library (nlme)
-nlme_1 <- lme(Cover ~ Depth, random = ~1|Island_Site_2, coral_cover2)
-anova(nlme_1)
 
 # Extra mixed models
 mixed.lmer_2 <- lmer(Cover ~ Depth + (Depth | Island_Site_2), coral_cover2)
@@ -137,12 +161,23 @@ plot(mixed.lmer_5)
 qqnorm(resid(mixed.lmer_5))
 qqline(resid(mixed.lmer_5))
 
-anova (mixed.lmer,mixed.lmer_2,mixed.lmer_3,mixed.lmer_4,mixed.lmer_5)
+mixed.lmer_nested <- lmer(Cover ~  (1|Island_Site_2/Island), data = coral_cover2, REML = TRUE)
+mixed.lmer_nested_full <- lmer(Cover ~ Depth +  (1|Island_Site_2/Island), data = coral_cover2, REML = TRUE)
 
-# Smaller AIC and BIC is mixed.lmer     Cover = Depth * -0.354 + 48.3886
+anova(mixed.lmer_nested_full,mixed.lmer_nested)
+
+# mixed.log model
+mixed.lmer.log <- lmer(Cover ~ log(Depth) + (1|Island_Site_2), data = coral_cover2) 
+
+
+
+anova (mixed.lmer, mixed.lmer.full,mixed.lmer_2,mixed.lmer_3,mixed.lmer_4,mixed.lmer_5, mixed.lmer_nested, mixed.lmer_nested_full, mixed.lmer.log)
+
+
+# Smaller AIC and BIC is mixed.lmer.full     Cover = Depth * -0.354 + 48.3886
 
 # Fitted plot from model 
-coral_cover2$fit <- predict(mixed.lmer) # Add model to the dataframe
+coral_cover2$fit <- predict(mixed.lmer.full) # Add model to the dataframe
 
 ### This is not the good one ####
 # ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.9, method = "loess", size = 0.2, colour = "transparent") +
@@ -151,9 +186,9 @@ coral_cover2$fit <- predict(mixed.lmer) # Add model to the dataframe
 #   theme_bw()
 ### This is not the good one ####
 
-coral_cover2$fit <- predict(mixed.lmer)
-coral_cover2$fit_se <- coral_cover$fit + 0.0435
-coral_cover2$fit_seneg <- coral_cover$fit - 0.0435
+coral_cover2$fit <- predict(mixed.lmer.full)
+coral_cover2$fit_se <- coral_cover2$fit + 0.0435
+coral_cover2$fit_seneg <- coral_cover2$fit - 0.0435
 
 coral_cover <- coral_cover2
 # Measure mean and standard error
@@ -179,7 +214,7 @@ coral_cover$Depth <- as.numeric (as.character(coral_cover$Depth))
 # This is the good one!
 cols <- brewer.pal(8, "Dark2")
 Fig_1A <- ggplot(coral_cover, aes(x=Depth, y=Cover)) +
-  # geom_point(aes(fill = Island, colour = Island),shape = 21, size = 0.8)  + 
+ # geom_point(aes(fill = Island, colour = Island),shape = 21, size = 0.8)  + 
   geom_errorbar(aes(ymin = Mean - Cover_se, ymax = Mean + Cover_se), color="black", size=1, width=2) +
   geom_line(aes(y=Fit_mean), size=1, linetype="dashed", alpha = 1) +
   geom_line(aes(y=Fit_mean + Fit_sd), size=0.3, linetype="dotted",alpha = 0.8) +
@@ -193,6 +228,52 @@ Fig_1A <- ggplot(coral_cover, aes(x=Depth, y=Cover)) +
                   axis.title = element_text(size=11, face="bold", colour="black"), legend.position = "none") 
 Fig_1A
 ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_1A.pdf", Fig_1A,width = 4, height = 3.5)
+
+
+
+# Measure the mean of cover for each island (mean of site 1 and 2)
+
+Island_cover <- aggregate (Cover ~ Island  + Depth, coral_cover , mean)
+
+colnames (Island_cover) <- c("Island", "Depth","Island_cover")
+
+coral_cover <- merge (coral_cover,Island_cover)
+
+Island_sd <- aggregate (Cover ~ Island  + Depth, coral_cover , sd)
+colnames (Island_sd) <- c("Island", "Depth","Island_sd")
+
+coral_cover <- merge (coral_cover,Island_sd)
+
+# Measure mean and standard error
+summary_island <- ddply(coral_cover, ~ Island + Depth, summarize, Island_cover=mean(Cover), Island_se=sd(Cover) / sqrt(length(Cover)))
+
+coral_cover <- merge (coral_cover,summary_island)
+
+
+
+
+# Separate per islands if finally keep a supplementary figure 
+Fig_SXX <- ggplot(coral_cover, aes(x=Depth, y=Cover)) + 
+  facet_wrap(~Island, ncol = 4, scales = "free")  +
+  geom_line(aes(y=Fit_mean), size=0.5, linetype="dashed", alpha = 1) +
+  geom_line(aes(y=Fit_mean + Fit_sd), size=0.3, linetype="dotted",alpha = 0.8) +
+  geom_line(aes(y=Fit_mean - Fit_sd), size=0.3, linetype="dotted",alpha = 0.8) +
+ # geom_errorbar(aes(ymin = Island_cover - Island_se, ymax = Island_cover + Island_se), color="black", size=0.5, width=0.5) +
+  geom_point(aes(y=Island_cover), shape=21, size=1.5, fill = "grey")+
+  geom_point(aes(y=Cover, shape = Island_Site), size=0.5, fill = "grey")+ # Variability of sites
+  scale_x_continuous(name ="Depth (m)", limits=c(3,122), breaks = c(6,20,40,60,90,120)) +
+  scale_y_continuous(name ="Coral cover (%)", limits=c(0,85), breaks = c(0,20,40,60,80)) +
+  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
+                      axis.text = element_text(size=10, colour="black"),
+                      axis.title = element_text(size=11, face="bold", colour="black"), 
+                      strip.text = element_text(size = 11,face="bold", colour="black"),
+                      panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank(), legend.position = "none") 
+Fig_SXX
+
+ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_SCover_Island.pdf", Fig_SXX, width = 6, height = 5)
+
 
 
 
@@ -217,7 +298,7 @@ coral_data_main <- coral_data_main %>% unite(Island_Island_Site, Island, Island_
 # colours <- rainbow(33)
 colours <- distinctColorPalette(33)
 # brewer.pal(33, "BrBG")
-Sup_Fig_4 <- ggplot(coral_data_main, aes(x=Depth, y=Relative, fill=Coral_genus)) +
+Sup_Fig_X <- ggplot(coral_data_main, aes(x=Depth, y=Relative, fill=Coral_genus)) +
   scale_fill_manual(values= colours) +
   geom_area(alpha=1 , size=0.5, colour="black") + facet_wrap(~Island_Island_Site,ncol = 8) + 
   scale_x_reverse(lim=c(120,0), breaks = c(6,20,40,60,90,120)) +    coord_flip() + 
@@ -232,8 +313,8 @@ Sup_Fig_4 <- ggplot(coral_data_main, aes(x=Depth, y=Relative, fill=Coral_genus))
                           strip.background = element_rect(fill="grey"),
                           legend.position = "bottom") +
                           guides(fill = guide_legend(ncol = 8, title.hjust = 0.4))
-Sup_Fig_4
-ggsave("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Sup_Fig_4.pdf",Sup_Fig_4 ,height = 8, width = 15)
+Sup_Fig_X
+ggsave("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Sup_Fig_X.pdf",Sup_Fig_X ,height = 8, width = 15)
 
 
 
@@ -247,10 +328,10 @@ coral_data_main_Genus <- coral_data_main_Genus %>% complete(Island,Island_Site, 
 # Group the very rare corals together! Otherwise, impossible to see the plot. At least display:
 unique (coral_data_main_Genus$Coral_genus)
 
-keep_species <-  c ("Acropora","Astreopora","Montipora","Leptoseris","Leptastrea","Pachyseris","Pavona","Echynophillia","Fungia","Pocillopora","Porites")
+keep_species <-  c ("Acropora","Astreopora","Montipora","Leptoseris","Leptastrea","Pachyseris","Pavona","Echynophillia","Pocillopora","Porites")
 
 # Transform rest of genus to others
-coral_data_main_Genus$Coral_genus <- gsub("Dipsastrea|Astrea|Leptoria|Plesiastrea|Cyphastrea|Paragoniastrea|Cycloseris|Cantharellus|Pleuractis|Lobactis|Herpolitha|Acanthastrea|Alveopora|Coscinarea|Gardinoseris|Lobophyllia|Napopora|Non_Id_Coral|Psammocora|Stylocoeniella|Turbinaria|Sandalolitha", "Others", coral_data_main_Genus$Coral_genus)
+coral_data_main_Genus$Coral_genus <- gsub("Dipsastrea|Astrea|Leptoria|Plesiastrea|Cyphastrea|Paragoniastrea|Cycloseris|Cantharellus|Pleuractis|Lobactis|Herpolitha|Acanthastrea|Alveopora|Coscinarea|Gardinoseris|Lobophyllia|Napopora|Non_Id_Coral|Psammocora|Stylocoeniella|Turbinaria|Sandalolitha|Fungia", "Others", coral_data_main_Genus$Coral_genus)
 
 ######### This is measuring relative composition for each site and later making the mean of the relatives. This is good!
 coral_data_compo <- aggregate(Cover ~   Island + Island_Site + Depth + Coral_genus,  coral_data_main_Genus, mean)
@@ -280,7 +361,7 @@ rm (coral_data_main_Genus, coral_data_compo_total)
 
 
 # As factor to plot in the order we want
-coral_data_compo$Coral_genus = factor(coral_data_compo$Coral_genus,levels = c ("Pocillopora", "Pachyseris", "Leptoseris","Montipora","Porites", "Acropora", "Pavona",  "Echynophillia","Fungia","Leptastrea","Astreopora","Others"))
+coral_data_compo$Coral_genus = factor(coral_data_compo$Coral_genus,levels = c ("Pocillopora", "Pachyseris", "Leptoseris","Montipora","Porites", "Acropora", "Pavona",  "Echynophillia","Leptastrea","Astreopora","Others"))
 
 # Set good colours for final figure 1C
 
@@ -336,10 +417,10 @@ coral_data_main_Genus <- coral_data_main_Genus %>% complete(Island,Island_Site, 
 # Group the very rare corals together! Otherwise, impossible to see the plot. At least display:
 unique (coral_data_main_Genus$Coral_genus)
 
-keep_species <-  c ("Acropora","Astreopora","Montipora","Leptoseris","Leptastrea","Pachyseris","Pavona","Echynophillia","Fungia","Pocillopora","Porites")
+keep_species <-  c ("Acropora","Astreopora","Montipora","Leptoseris","Leptastrea","Pachyseris","Pavona","Echynophillia","Pocillopora","Porites")
 
 # Transform rest of genus to others
-coral_data_main_Genus$Coral_genus <- gsub("Dipsastrea|Astrea|Leptoria|Plesiastrea|Cyphastrea|Paragoniastrea|Cycloseris|Cantharellus|Pleuractis|Lobactis|Herpolitha|Acanthastrea|Alveopora|Coscinarea|Gardinoseris|Lobophyllia|Napopora|Non_Id_Coral|Psammocora|Stylocoeniella|Turbinaria|Sandalolitha", "Others", coral_data_main_Genus$Coral_genus)
+coral_data_main_Genus$Coral_genus <- gsub("Dipsastrea|Astrea|Leptoria|Plesiastrea|Cyphastrea|Paragoniastrea|Cycloseris|Cantharellus|Pleuractis|Lobactis|Herpolitha|Acanthastrea|Alveopora|Coscinarea|Gardinoseris|Lobophyllia|Napopora|Non_Id_Coral|Psammocora|Stylocoeniella|Turbinaria|Sandalolitha|Fungia", "Others", coral_data_main_Genus$Coral_genus)
 
 
 coral_data_compo <- aggregate(Cover ~  Island + Island_Site + Depth + Coral_genus ,  coral_data_main_Genus, mean)
@@ -352,7 +433,7 @@ coral_data_compo$Relative <- (coral_data_compo$Genus_cover/ coral_data_compo$Tot
 rm (coral_data_main_Genus, coral_data_compo_total)
 
 # As factor to plot in the order we want
-coral_data_compo$Coral_genus = factor(coral_data_compo$Coral_genus,levels = c ("Pocillopora", "Pachyseris", "Leptoseris","Montipora","Porites", "Acropora", "Pavona",  "Echynophillia","Fungia","Leptastrea","Astreopora","Others"))
+coral_data_compo$Coral_genus = factor(coral_data_compo$Coral_genus,levels = c ("Pocillopora", "Pachyseris", "Leptoseris","Montipora","Porites", "Acropora", "Pavona",  "Echynophillia","Leptastrea","Astreopora","Others"))
 
 coral_data_compo <- coral_data_compo %>% unite(Island_Island_Site, Island, Island_Site)
 
@@ -379,7 +460,7 @@ coral_data_compo$Island_Island_Site <- gsub('Gambier_2', 'GAM2', coral_data_comp
 coral_data_compo$Island_Island_Site <- factor(coral_data_compo$Island_Island_Site, levels = c("MOO1","MOO2","TAH1","TAH2","BOR1","BOR2","TIK1","TIK2","RAN1","RAN2","RAR1","RAR2","MAK1","MAK2","GAM1","GAM2"))
 
 
-Fig_Sup <- ggplot(coral_data_compo, aes(x=Island_Island_Site, y=Relative)) +
+Fig_Sup_4 <- ggplot(coral_data_compo, aes(x=Island_Island_Site, y=Relative)) +
   geom_bar(aes(fill=factor(Coral_genus)), stat="identity", width = 0.3) +  facet_grid (rows = vars(Depth), switch = "both") +
   scale_fill_manual(values= colours_corals) +
   # geom_line(aes(y=fit_se), size=1, linetype="dotted",alpha = 0.8, col = "blue") +
@@ -392,8 +473,8 @@ Fig_Sup <- ggplot(coral_data_compo, aes(x=Island_Island_Site, y=Relative)) +
                           strip.text.y = element_text(size=16, colour="black"),
                           axis.title = element_text(size=14, face="bold", colour="black"), legend.position = "bottom") +
   guides(fill = guide_legend(ncol = 14, title = NULL))
-Fig_Sup
-ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_Rel_Comm_Domin.pdf", Fig_Sup, width = 20, height = 10)
+Fig_Sup_4
+ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_Rel_Comm_Domin.pdf", Fig_Sup_4, width = 20, height = 10)
 
 
 
@@ -1825,17 +1906,21 @@ mantel(Beta_Depth_Matrix_Depth_6, dm_120) #
 
 
 #### Plot of the lm for measuring increase of beta.bray diversity with depth
+pdf("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Boxplot_Bray.pdf", bg = "white", width = 6, height = 4) 
 boxplot (Beta_Depth_Matrix_Depth_1,Beta_Depth_Matrix_Depth_2, Beta_Depth_Matrix_Depth_3,Beta_Depth_Matrix_Depth_4,Beta_Depth_Matrix_Depth_5, Beta_Depth_Matrix_Depth_6, 
          xlab = "Depth (m)",
          ylab = "Beta.bray",
          names = c("6","20","40","60","90", "120"), 
-         main = "Bray distance - Coral cover")
+         main = "Bray Curtis - Dominance")
+dev.off()
+
+
 
 # Introduce values manually: 
 
 beta_div_depth <- data.frame(Depth=c("6", "20", "40", "60", "90", "120"), 
                              beta_bray=c(mean(Beta_Depth_Matrix_Depth_1),mean(Beta_Depth_Matrix_Depth_2), mean(Beta_Depth_Matrix_Depth_3), mean(Beta_Depth_Matrix_Depth_4), mean(Beta_Depth_Matrix_Depth_5), mean(Beta_Depth_Matrix_Depth_6)))
-beta_div_depth
+
 
 beta_div_depth$Depth <- as.numeric (beta_div_depth$Depth)
 summary (lm(beta_bray~ Depth,beta_div_depth ))

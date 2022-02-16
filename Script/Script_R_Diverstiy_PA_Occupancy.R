@@ -8,7 +8,6 @@ require (ggpubr); require (cowplot); require (patchwork)  ;library(viridisLite);
 
 
 
-
 # Mid-domain effect
 require(devtools)    
 library(reshape2)
@@ -159,7 +158,7 @@ Fig_1B <- ggplot(MDE_all, aes(x=Depth, y=Richness)) +
   geom_point(aes(y=Mean), shape=21, size=4, fill = "white")+
   theme_classic() + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
                       axis.text = element_text(size=10, colour="black"),
-                      axis.title = element_text(size=11, face="bold", colour="black"), legend.position = "bottom") 
+                      axis.title = element_text(size=11, face="bold", colour="black"), legend.position = "bottom")
 
 Fig_1B # Mean values of the model and IQ 2.5 and 97.5 among islands - to see differences between islands check Supp. 
 ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_1B.pdf", Fig_1B, width = 4, height = 3.5)
@@ -169,14 +168,22 @@ ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_
 
 ggsave( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Figure_1.pdf", Figure_1,  width = 4, height = 8)
 
+# MEasure generic richness per site and not by island
+agg2 <- aggregate(Coral_genus ~ Island + Island_Site +  Depth, data=subset(PA_df), FUN=function(x) length(unique(x)))
+colnames (agg2) [4]<- "Richness_Site"
+
+MDE_all <- merge (MDE_all, agg2)
+
+MDE_all$Island_Site <- as.factor (MDE_all$Island_Site)
 # Separate per islands if you prefer supplementary figure
 Fig_S2 <-ggplot(MDE_all, aes(x=Depth, y=Richness)) + 
   facet_wrap(~Island, ncol = 4, scales = "free")  +
   #geom_line(aes(y=Richness),size = 1,linetype="solid", alpha = 0.8, colour = "blue")  + 
-  geom_line(aes(y=mod.rich),size = 0.5,linetype="dashed", alpha = 1)  +  
-  geom_line(aes(y=q2.5), size=0.3, linetype="dotted",alpha = 0.8) +
-  geom_line(aes(y=q97.5), size=0.3, linetype="dotted",alpha = 0.8) +
-  geom_point(aes(y=Mean), shape=21, size=1, fill = "grey")+
+  geom_line(aes(y=Mean_model),size = 0.5,linetype="dashed", alpha = 1)  +  
+  geom_line(aes(y=Q2.5_model), size=0.3, linetype="dotted",alpha = 0.8) +
+  geom_line(aes(y=Q97.5_model), size=0.3, linetype="dotted",alpha = 0.8) +
+  geom_point(aes(y=Richness), shape=21, size=1.5, fill = "grey")+
+  geom_point(aes(y=Richness_Site, shape = Island_Site), size=0.5, fill = "grey")+ # Variability of sites
   scale_x_continuous(name ="Depth (m)", limits=c(3,122), breaks = c(6,20,40,60,90,120)) +
   scale_y_continuous(name ="Generic richness (%)", limits=c(0,30), breaks = c(0,10,20,30)) +
   theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
@@ -185,8 +192,9 @@ Fig_S2 <-ggplot(MDE_all, aes(x=Depth, y=Richness)) +
                       strip.text = element_text(size = 11,face="bold", colour="black"),
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank(),
-                      panel.background = element_blank()) 
-Fig_S2 
+                      panel.background = element_blank(), legend.position = "none")
+Fig_S2  
+
 ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_S2.pdf", Fig_S2, width = 6, height = 5)
 
 
@@ -1587,10 +1595,17 @@ Beta_Depth_Matrix_Depth_5 <- as.dist(Beta_Depth_Matrix_Depth_5)
 Beta_Depth_Matrix_Depth_6 <- Beta_Depth_Matrix[c(81:95),c(81:95)]
 Beta_Depth_Matrix_Depth_6 <- as.dist(Beta_Depth_Matrix_Depth_6)
 
-beta_div_depth <- data.frame(Depth=c("6", "20", "40", "60", "90", "120"), 
-                             beta_jac=c(mean(Beta_Depth_Matrix_Depth_1),mean(Beta_Depth_Matrix_Depth_2), mean(Beta_Depth_Matrix_Depth_3), mean(Beta_Depth_Matrix_Depth_4), mean(Beta_Depth_Matrix_Depth_5), mean(Beta_Depth_Matrix_Depth_6)))
-beta_div_depth # This is the value for the table
 
+beta_div_depth <- data.frame(Depth=c("6", "20", "40", "60", "90", "120"), 
+                             beta_jac=c(mean(Beta_Depth_Matrix_Depth_1),mean(Beta_Depth_Matrix_Depth_2), mean(Beta_Depth_Matrix_Depth_3), mean(Beta_Depth_Matrix_Depth_4), mean(Beta_Depth_Matrix_Depth_5), mean(Beta_Depth_Matrix_Depth_6)),
+                             Se = c(sd(Beta_Depth_Matrix_Depth_1) / sqrt(length(Beta_Depth_Matrix_Depth_1)), sd(Beta_Depth_Matrix_Depth_2) / sqrt(length(Beta_Depth_Matrix_Depth_2)),sd(Beta_Depth_Matrix_Depth_3) / sqrt(length(Beta_Depth_Matrix_Depth_3)),
+                                    sd(Beta_Depth_Matrix_Depth_4) / sqrt(length(Beta_Depth_Matrix_Depth_4)),sd(Beta_Depth_Matrix_Depth_5) / sqrt(length(Beta_Depth_Matrix_Depth_5)),sd(Beta_Depth_Matrix_Depth_6) / sqrt(length(Beta_Depth_Matrix_Depth_6))))
+beta_div_depth # These are the values for the table
+
+
+# check linear model for Jaccard
+beta_div_depth$Depth <- as.numeric (beta_div_depth$Depth)
+summary (lm(beta_jac ~ Depth,beta_div_depth ))
 
 ### Beta jaccard-turnover
 
@@ -1844,11 +1859,14 @@ mantel(Beta_Depth_Matrix_Depth_6, dm_120) #
 
 
 # Plot of the lm for measuring increase of beta.jac diversity with depth
+pdf("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Boxplot_Jac.pdf", bg = "white", width = 6, height = 4) 
 boxplot (Beta_Depth_Matrix_Depth_1,Beta_Depth_Matrix_Depth_2, Beta_Depth_Matrix_Depth_3,Beta_Depth_Matrix_Depth_4,Beta_Depth_Matrix_Depth_5, Beta_Depth_Matrix_Depth_6, 
          xlab = "Depth (m)",
-         ylab = "Beta.bray - Jaccard",
+         ylab = "Beta.jaccard",
          names = c("6","20","40","60","90", "120"), 
-         main = "Jaccard distance - PA")
+         main = "Jaccard - Composition")
+dev.off()
+
 
 
 # Introduce values manually: 
