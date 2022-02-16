@@ -6,7 +6,7 @@
 # Access to the full database can be found in: http://observatoire.criobe.pf/wiki/tiki-index.php?page=Polynesia%20Mana&no_bl=y
 ###
 
-rm (list = ls()) 
+rm (list = ls())
 
 par(mfrow=c(1,1)) 
 

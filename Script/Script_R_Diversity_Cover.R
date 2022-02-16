@@ -11,9 +11,9 @@ require (betapart); library (car); library (MASS); library (glmm); library (glmn
 require (ggpubr); library (cowplot); library (patchwork); library (scales);library(viridisLite) ; library(patchwork); library(fishualize);library(tidyverse) 
 
 
-# Mid-domain effect (there's no mid-domain effect) 
+# Mid-domain effect (there's no mid-domain effect)
 require(devtools)
-library(reshape2) 
+library(reshape2)
 
 # Geospatial data
 require (geodist)

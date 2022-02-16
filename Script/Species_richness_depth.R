@@ -12,7 +12,7 @@ require(reshape); require (reshape2); require (data.table); require(dplyr); requ
 ## R Markdown to show that genus is correlated to species level
 
 ### From Rocha database (Coral trait - database)
-
+ 
 
  
 rm(list = ls ())

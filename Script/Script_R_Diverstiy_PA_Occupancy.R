@@ -42,7 +42,7 @@ PA_df$Coral_genus <- gsub("Coscinarea", "Coscinaraea", PA_df$Coral_genus)
 
 # How many quadrats
 nb_genera <- ddply(PA_df, ~ Island + Island_Site + Depth + Coral_genus ,function(x){
-  c(nobserv=nrow(x)) }) 
+  c(nobserv=nrow(x)) })
 
 
 # Transform values bigger than 30, because several "Porites branching" "Porites massive"....
