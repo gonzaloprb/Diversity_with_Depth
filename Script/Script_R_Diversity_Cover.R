@@ -115,8 +115,8 @@ AIC(lmer(Cover ~ (1|Island_Site_2), data = coral_cover2, REML = TRUE))
 # Getting the p-value for depth!
 anova(mixed.lmer.full,mixed.lmer)
 
+# Check normality and assumptions
 shapiro.test(residuals(mixed.lmer.full))
-
 plot(mixed.lmer.full)
 
 
