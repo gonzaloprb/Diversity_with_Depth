@@ -96,6 +96,8 @@ summary (lm_2)
 # lm_3 <- lm(Cover ~ Depth + Depth*Island_Site_2, data = coral_cover2) 
 # summary (lm_3)
 ### ? 
+
+
 # Mixed model with depth as fixed factor and Island_Site as Random
 # Convergence code: 0 means no error
 
