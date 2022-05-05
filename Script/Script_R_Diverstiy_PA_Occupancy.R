@@ -405,7 +405,7 @@ theme_blank = function(base_size = 12, base_family = "") {
     )
 }
 #### Necessary theme for NMDS ####
-
+ 
 # Plot NMDS
 PA_NMDS_coordinates = PA_NMDS_coordinates %>% mutate(Depth = factor(Depth, levels = c(6, 20, 40, 60, 90, 120)))
 hull_PA_NMDS <- PA_NMDS_coordinates %>% group_by(Depth) %>% slice(chull(MDS1,MDS2))
