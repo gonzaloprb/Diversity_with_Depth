@@ -475,7 +475,7 @@ cast_all_depth$ID<- with(cast_all_depth,paste0(Island, sep = "_",  Island_Site, 
 cast_all_depth <- as.matrix (cast_all_depth)
 row.names(cast_all_depth) <- cast_all_depth[,"ID"]
 
-cast_all_depth <- cast_all_depth[,-c(1,2,3,4,38)]
+cast_all_depth <- cast_all_depth[,-c(1,2,3,4,38)] 
 
 class(cast_all_depth) <- "numeric"
 

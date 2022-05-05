@@ -64,11 +64,11 @@ coral_cover$Depth = factor(coral_cover$Depth,levels = c ("6", "20", "40", "60", 
 
 # ggplot with island sites
 ggplot(coral_cover, aes(x=Depth, y=Cover)) + 
-  geom_boxplot() + geom_point(aes (colour = Island),size = 1) + stat_summary(fun=mean, geom="point", shape=18, color="red", size=4) + 
+  geom_boxplot() + geom_point(aes (),size = 1) + stat_summary(fun=mean, geom="point", shape=18, color="red", size=4) + 
   theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
   theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
         axis.text = element_text(size=10, colour="black"),
-        axis.title = element_text(size=11, face="bold", colour="black")) 
+        axis.title = element_text(size=11, face="bold", colour="black"))
 
 
 # no-mid-domain effect. 
@@ -105,6 +105,7 @@ summary (lm_2)
 mixed.lmer.full <- lmer(Cover ~ Depth +   (1|Island_Site_2), data = coral_cover2, REML = TRUE)
 mixed.lmer <- lmer(Cover ~  (1|Island_Site_2),data = coral_cover2, REML = TRUE)
 
+
 #### Keeping quadrats - it gives the same ####
 mixed.lmer.quadrats.full <- lmer(Cover ~ Depth +   (1|Island_Site_2), data = data_df2, REML = TRUE)
 mixed.lmer.quadrats <- lmer(Cover ~  (1|Island_Site_2),data = data_df2, REML = TRUE)
@@ -122,7 +123,7 @@ anova(mixed.lmer.full,mixed.lmer)
 shapiro.test(residuals(mixed.lmer.full))
 
 leveneTest(residuals(mixed.lmer.full) ~ as.factor(coral_cover2$Depth)) # Levenetest does not accept quantitive data so I made Depth as factor.
-# p-value is more than 0.05, which means we accept the null hypothesis that there is no variance among the groups
+# p-value is less than 0.05, which means we accept the null hypothesis that there is no variance among the groups
 # Since the result is not significant, the assumption of equal variances (homoscedasticity) is met.
 
 boxplot(residuals(mixed.lmer.full) ~ coral_cover2$Depth)
@@ -163,7 +164,7 @@ plotResiduals(simulationOutput) # right plot in plot.DHARMa()
 
 # Plots of model with DHARMa package - but with all quadrats
 testDispersion(mixed.lmer.quadrats.full)
-simulationOutput <- simulateResiduals(fittedModel = mixed.lmer.quadrats.full, plot = F)
+simulationOutput <- simulateResiduals(fittedModel = mixed.lmer.quadrats.full, plot = T)
 residuals(simulationOutput)
 residuals(simulationOutput, quantileFunction = qnorm, outlierValues = c(-7,7))
 plotQQunif(simulationOutput) # left plot in plot.DHARMa()
@@ -172,6 +173,7 @@ plotResiduals(simulationOutput) # right plot in plot.DHARMa()
 
 # Get the marginal and conditional R2
 r.squaredGLMM(mixed.lmer.full)
+r.squaredGLMM(mixed.lmer)
 # Marginal is explained by the fixed effects. 
 # Conditional is explained by the full model
 
@@ -180,6 +182,7 @@ r.squaredGLMM(mixed.lmer.full)
 # Extra mixed models
 mixed.lmer_2 <- lmer(Cover ~ Depth + (Depth | Island_Site_2), coral_cover2)
 summary(mixed.lmer_2)
+r.squaredGLMM(mixed.lmer_2)
 # 1.766e+01/(1.766e+01 +1.804e+02) --> Island_Site_2 explains 8% of variance
 plot(mixed.lmer_2) 
 qqnorm(resid(mixed.lmer_2))
@@ -187,12 +190,14 @@ qqline(resid(mixed.lmer_2))
 
 mixed.lmer_3 <- lmer(Cover ~ Depth + (Depth || Island_Site_2), coral_cover2)
 summary(mixed.lmer_3)
+r.squaredGLMM(mixed.lmer_3)
 plot(mixed.lmer_3) 
 qqnorm(resid(mixed.lmer_3))
 qqline(resid(mixed.lmer_3))
 
 mixed.lmer_4 <- lmer(Cover ~ 1 + Depth + (1 + Depth | Island_Site_2), coral_cover2)
 summary(mixed.lmer_4)
+r.squaredGLMM(mixed.lmer_4)
 # 1.766e+01/(1.766e+01 +1.804e+02) --> Intercept of Island_Site_2 explains 8% of variance
 # 1.726e-03 /(1.726e-03  +1.804e+02) --> Intercept of Island_Site_2 explains 8% of variance
 plot(mixed.lmer_4) 
@@ -201,12 +206,16 @@ qqline(resid(mixed.lmer_4))
 
 mixed.lmer_5 <- lmer(Cover ~ 1 + Depth + (1 + Depth | Island_Site_2) +  (1|Island_Site_2) , coral_cover2)
 summary(mixed.lmer_5)
+r.squaredGLMM(mixed.lmer_5)
 plot(mixed.lmer_5) 
 qqnorm(resid(mixed.lmer_5))
 qqline(resid(mixed.lmer_5))
 
 mixed.lmer_nested <- lmer(Cover ~  (1|Island_Site_2/Island), data = coral_cover2, REML = TRUE)
 mixed.lmer_nested_full <- lmer(Cover ~ Depth +  (1|Island_Site_2/Island), data = coral_cover2, REML = TRUE)
+
+r.squaredGLMM(mixed.lmer_nested)
+r.squaredGLMM(mixed.lmer_nested_full)
 
 anova(mixed.lmer_nested_full,mixed.lmer_nested)
 
@@ -228,7 +237,7 @@ anova (mixed.lmer, mixed.lmer.full,mixed.lmer_2,mixed.lmer_3,mixed.lmer_4,mixed.
 
 
 
-### Transform to beta distribution 
+### Use a beta distribution to avoid problem of normality 
 
 coral_cover2$Cover_Beta <- coral_cover2$Cover/100
 
@@ -242,13 +251,13 @@ coral_cover2$Proportion = coral_cover2$Coral_points / (coral_cover2$Coral_points
 coral_cover2$Proportion [coral_cover2$Proportion == 0] <-  .001 # Otherwise beta distribution with 0 it does not work
 
 mixed.lmer.full_beta <- lmer(Proportion ~ Depth +   (1|Island_Site_2), data = coral_cover2, REML = TRUE)
-
+r.squaredGLMM(mixed.lmer.full_beta)
 
 # Check normality and assumptions
-shapiro.test(residuals(mixed.lmer.full_beta))
+shapiro.test(residuals(mixed.lmer.full_beta)) # Smaller than 0.05, accept null hypothesis, reject normality
 
 leveneTest(residuals(mixed.lmer.full_beta) ~ as.factor(coral_cover2$Depth)) # Levenetest does not accept quantitive data so I made Depth as factor.
-# p-value is more than 0.05, which means we accept the null hypothesis that there is no variance among the groups
+# p-value is smaller than 0.05, which means we accept the null hypothesis that there is  variance among the groups
 # Since the result is not significant, the assumption of equal variances (homoscedasticity) is met.
 
 boxplot(residuals(mixed.lmer.full_beta) ~ coral_cover2$Depth)
@@ -256,7 +265,7 @@ boxplot(residuals(mixed.lmer.full_beta) ~ coral_cover2$Depth)
 plot(mixed.lmer.full_beta)
 
 
-
+# With beta distribution and glmmTMB package
 library (glmmTMB)
 
 mixed_beta_full <- glmmTMB (Proportion ~ Depth + (1|Island_Site_2), data = coral_cover2, REML = TRUE, family = beta_family())
@@ -266,13 +275,13 @@ mixed_beta_null <- glmmTMB (Proportion ~  (1|Island_Site_2), data = coral_cover2
 summary (mixed_beta_null)
 
 mixed_beta_2 <- glmmTMB (Proportion ~ Depth + (Depth | Island_Site_2) , data = coral_cover2, REML = TRUE, family = beta_family())
-summary (mixed_beta_2)
+# No convergence      summary (mixed_beta_2)
 
 mixed_beta_3 <- glmmTMB (Proportion ~ 1 + Depth + (1 + Depth | Island_Site_2), data = coral_cover2, REML = TRUE, family = beta_family())
-summary (mixed_beta_3)
+# No convergence      summary (mixed_beta_3)
 
 mixed_beta_4 <- glmmTMB (Proportion ~ 1 + Depth + (1 + Depth | Island_Site_2) +  (1|Island_Site_2), data = coral_cover2, REML = TRUE, family = beta_family())
-summary (mixed_beta_4)
+# No convergence      summary (mixed_beta_4)
 
 mixed.lmer_beta_nested <- glmmTMB(Proportion ~  (1|Island_Site_2/Island), data = coral_cover2, REML = TRUE, family = beta_family())
 summary (mixed.lmer_beta_nested)
@@ -283,21 +292,20 @@ summary (mixed.lmer_beta_nested_full)
 anova(mixed_beta_null,mixed.lmer_beta_nested) # Better without nested effect
 
 anova(mixed_beta_full,mixed_beta_2,mixed_beta_3,mixed_beta_4)
+# Most did not converge beta 2, 3, 4
 
 
-# shapiro.test(residuals(mixed_beta_full))
+shapiro.test(residuals(mixed_beta_full)) # Normality rejected again
 
 leveneTest(residuals(mixed_beta_full) ~ as.factor(coral_cover2$Depth)) # Levenetest does not accept quantitive data so I made Depth as factor.
+# normality rejected again 
 
-# Plots of model with DHARMa package - but with all quadrats
+# Plots of model with DHARMa package 
 testDispersion(mixed_beta_full)
-simulationOutput <- simulateResiduals(fittedModel = mixed_beta_full, plot = T)
+simulationOutput <- simulateResiduals(fittedModel = mixed_beta_full, plot = T) # It looks like okay but we still have problem of normality
 
-
+# The only good one, mixed_beta_full but we have the problem of normality
 summary (mixed_beta_full)
-
-coral_cover2$fit <- predict(mixed_beta_full)
-
 
 
 
@@ -311,39 +319,34 @@ mixed_model_beta_full <- mixed_model(fixed = Proportion ~  Depth, random = ~ 1 |
 mixed_model_full_2 <- mixed_model(fixed = Proportion ~ 1 + Depth , random = ~ 1 + Depth | Island_Site_2, data = coral_cover2,
                                family = beta.fam())
 
-shapiro.test(residuals(mixed_model_beta_full))
+shapiro.test(residuals(mixed_model_beta_full)) # does not accept normality
 
 leveneTest(residuals(mixed_model_beta_full) ~ as.factor(coral_cover2$Depth)) # Levenetest does not accept quantitive data so I made Depth as factor.
 
-# Plots of model with DHARMa package - but with all quadrats
 testDispersion(mixed_model_beta_full)
-simulationOutput <- simulateResiduals(fittedModel = mixed_model_beta_full, plot = T)
+simulationOutput <- simulateResiduals(fittedModel = mixed_model_beta_full, plot = T) # Significant deviations within groups
 
 
 summary (mixed_model_beta_full)
-plot (mixed_model_beta_full)
 
 anova (mixed_model_beta_full,mixed_model_full_2)
 
 
-fixef(mixed_model_beta_full)
-marginal_coefs(mixed_model_beta_full)
-
-
-nDF <- with(coral_cover2, expand.grid(Depth = seq(min(Depth), max(Depth), length.out = 15)))
-plot_data <- effectPlotData(mixed_model_beta_full, nDF)
-
-
-
-
-
-
-
-# Use Binomial or even Bayesian 
+# Try with Binomial distribution
 
 glmer_binomial_model <- glmer(cbind(Coral_points, Tot_Points - Coral_points) ~ Depth + (1 | Island_Site_2),
       data = coral_cover2, family = binomial)
+summary (glmer_binomial_model)
 
+glmer_binomial_model_null <- glmer(cbind(Coral_points, Tot_Points - Coral_points) ~  (1 | Island_Site_2),
+                              data = coral_cover2, family = binomial)
+summary (glmer_binomial_model_null)
+
+r.squaredGLMM(glmer_binomial_model) # The binomial has the highest R2
+anova (glmer_binomial_model,glmer_binomial_model_null, mixed.lmer.full) # but the AIC is much lower 
+
+
+# The best solution is to use Bayesian modelling.
 
 library(brms);library('rstan'); library("stam");library("parallel"); library ("performance")
 Binomial_Cover_model <- brm(Coral_points | trials(Tot_Points) ~  Depth + (1 | Island_Site_2),
@@ -369,13 +372,29 @@ save(Beta_Cover_model_zero, file="Data/Beta_Cover_model_zero_Diversity.RData")
 load("Data/Beta_Cover_model_zero_Diversity.RData") 
 
 
+Student_model <- brm(Cover ~  Depth + (1 | Island_Site_2),
+                             data = coral_cover2, family = student(),  # prior = my_priors,
+                             control = list(adapt_delta = 0.9, max_treedepth = 11),
+                             iter = 2000, warmup = 1000, chains = 2, cores = 2) 
+save(Student_model, file="Data/Student_model.RData")
+load("Data/Student_model.RData") 
+
 # The binomial is better than the beta model 
 summary (Beta_Cover_model)
 summary (Binomial_Cover_model)
 summary (Beta_Cover_model_zero)
+summary (Student_model)
 
+bayes_R2(Beta_Cover_model)
+bayes_R2(Binomial_Cover_model)
+bayes_R2(Beta_Cover_model_zero)
+bayes_R2(Student_model)
+
+# model_weights(Binomial_Cover_model, Beta_Cover_model, Beta_Cover_model_zero, weights = "waic")
+
+# The best is to use the Binomial_Cover_Model
 plot(Binomial_Cover_model)
-pp_check(Binomial_Cover_model, type = "scatter_avg") # Not structured data, could be better
+pp_check(Binomial_Cover_model, type = "scatter_avg") # Not structured data
 bayes_R2(Binomial_Cover_model) # 
 r2_bayes(Binomial_Cover_model)
 
@@ -383,7 +402,7 @@ me_null <- conditional_effects(Binomial_Cover_model, nsamples = 1000, probs = c(
 plot(me_null, ask = FALSE, points = F) # Probability scale!
 
 
-# From posterior predict - to get to the plot of the outliers. It changes from old model 
+# Work with posterior predict 
 # Create the reference dataframe - newdata (Here for all depths)
 Depth <- unique (Binomial_Cover_model$data$Depth)
 Island_Site_2 <- unique (Binomial_Cover_model$data$Island_Site_2)
@@ -410,21 +429,16 @@ ref_data_fitted <- melt (ref_data_fitted, id.vars = c ("Depth", "Island_Site_2")
 ref_data_fitted$Depth = factor (ref_data_fitted$Depth, levels = c ("120", "90","60", "40","20", "6"))
 
 
-
-
-# Summary depth and island among all iterations
-
+# Summary depth and island among all iterations 
 
 summary <- ddply(ref_data_fitted, .(Depth,Island_Site_2), summarize, Post_Mean=mean(Posterior_Prob), Post_Sd = sd(Posterior_Prob), Post_se=sd(Posterior_Prob) / sqrt(length(Posterior_Prob)), 
                  Post_Margin.error = qt(p=0.05/2, df=length (Posterior_Prob)-1,lower.tail=F) * Post_se)
-
-
 
 coral_cover2 <- merge (coral_cover2, summary)
 
 
 
-# Extract the number of points from cover
+# Extract the number of points from cover / Same as done before
 coral_cover2$Tot_Points <- 75
 coral_cover2$Coral_points <- (coral_cover2$Cover * coral_cover2$Tot_Points) / 100
 # Round the points
@@ -432,69 +446,19 @@ coral_cover2$Coral_points <-round(coral_cover2$Coral_points,0)
 coral_cover2$NonCoral_points <-abs (coral_cover2$Coral_points - coral_cover2$Tot_Points)
 
 
-# Test, transform the post depth mean expected from points to coral cover
+# Transform the posterior predict of binomial from points proportions (out of 75) to coral cover (%)
 coral_cover2$Post_Mean_Cover <- (coral_cover2$Post_Mean * 100) / coral_cover2$Tot_Points
 coral_cover2$Post_Sd_Cover <- (coral_cover2$Post_Sd * 100) / coral_cover2$Tot_Points
 coral_cover2$Post_se_Cover <- (coral_cover2$Post_se * 100) / coral_cover2$Tot_Points
 coral_cover2$Post_Margin.error_Cover <- (coral_cover2$Post_Margin.error * 100) / coral_cover2$Tot_Points
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #################################### new #############################
 
 
-
-
-
-# Smaller AIC and BIC is mixed.lmer.full     Cover = Depth * -0.354 + 48.3886
-
-# Fitted plot from model 
-coral_cover2$fit <- predict(mixed.lmer.full) # Add model to the dataframe
-
-### This is not the good one ####
-# ggplot(coral_cover2,aes(Depth, Cover,  col=Island )) + geom_smooth(span = 0.9, method = "loess", size = 0.2, colour = "transparent") +
-#   geom_line(aes(y=fit), size=0.8, linetype="dashed", col = "red") + 
-#   geom_point(alpha = 0.3) + 
-#   theme_bw()
-### This is not the good one ####
-
-summary (mixed.lmer.full)  
-confint (mixed.lmer.full)
-
-
-# Confidence intervals
-upperCI <-  fixef(mixed.lmer.full)[2] + 1.96*sqrt(diag(vcov(mixed.lmer.full)))[2]
-lowerCI <-  fixef(mixed.lmer.full)[2]  - 1.96*sqrt(diag(vcov(mixed.lmer.full)))[2]
-
-# coral_cover2$lower <- coral_cover2$fit - 0.4395
-# coral_cover2$upper <- coral_cover2$fit - 0.2679
-
-# Solution for predicting the upper and lower confidence intervals of model
-fit_upper_lower <- predictInterval(mixed.lmer.full, n.sims = 999)
-
-colnames (fit_upper_lower) <- c("fit2", "fit2upper", "fit2lower")
-
-coral_cover2 <- cbind (coral_cover2,fit_upper_lower) 
-
-
-
+# Measure mean and standard error and confidence intervals from raw cover values
 
 coral_cover <- coral_cover2
-# Measure mean and standard error and confidence intervals from raw cover values
 summary <- ddply(coral_cover, .(Depth), summarize, Mean=mean(Cover), Cover_se=sd(Cover) / sqrt(length(Cover)), 
                  Margin.error = qt(p=0.05/2, df=length (Cover)-1,lower.tail=F) * Cover_se)
 
@@ -508,83 +472,35 @@ summary <- ddply(coral_cover, .(Depth), summarize, Mean=mean(Cover), Cover_se=sd
 
 # Combine dataframes
 coral_cover <- merge (coral_cover,summary)
-# Make a single value for each depth of mixed lmer
-summary2 <- ddply(coral_cover, .(Depth), summarize, Fit_Depth=mean(fit), Fit_sd_Depth = sd (fit),fit2upper_Depth=mean(fit2upper),fit2lower_Depth=mean(fit2lower))
-coral_cover <- merge (coral_cover,summary2)
 
 # Make a single value for each depth of Post Bayesian
 summary2 <- ddply(coral_cover, .(Depth), summarize, Post_Cover_Depth=mean(Post_Mean_Cover), Post_Cover_sd_Depth = sd (Post_Mean_Cover))
 coral_cover <- merge (coral_cover,summary2)
 
 
-
 # Make the plot again
 coral_cover$Depth <- as.numeric (as.character(coral_cover$Depth))
 
-### This is not the good one ####
-# ggplot(coral_cover, aes(x=Depth, y=Cover)) + geom_point(aes (colour = Island),size = 0.5, alpha = 0.8)  + geom_smooth(span = 0.8, method = "loess", se = F) + 
-#   geom_line(aes(y=fit), size=0.7, linetype="dashed", col = "red") +   stat_summary(fun=mean, geom="point", shape=18, color="red", size=3) + 
-#   theme_bw()  + ylab ("Coral cover (%)") + xlab ("Depth (m)") +
-#   theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
-#         axis.text = element_text(size=10, colour="black"),
-#         axis.title = element_text(size=11, face="bold", colour="black")) 
-### This is not the good one ####
 
-# This is the good one!
-cols <- brewer.pal(8, "Dark2")
 
-# Plot with mixed lmer
-# Standard error - sd
+
+# Plot with Bayesian Binomial model (with standard deviation of the model and with coral cover mean values with CI
 
 Fig_1A <- ggplot(coral_cover, aes(x=Depth, y=Cover)) +
   # geom_point(aes(fill = Island, colour = Island),shape = 21, size = 0.8)  + 
-  geom_errorbar(aes(ymin = Mean - Cover_se, ymax = Mean + Cover_se), color="black", size=1, width=2) +
-  geom_line(aes(y=Fit_Depth), size=1, linetype="dashed", alpha = 1) +
-  geom_line(aes(y=Fit_Depth + Fit_sd_Depth), size=0.3, linetype="dotted",alpha = 0.8) +
-  geom_line(aes(y=Fit_Depth - Fit_sd_Depth), size=0.3, linetype="dotted",alpha = 0.8) +
-  scale_fill_manual(values = cols) + scale_color_manual(values = cols) +
-  geom_point(aes(y=Mean), shape=21, fill="white", size=4) +  
-  scale_x_continuous(name ="Depth (m)", limits=c(5,122), breaks = c(6,20,40,60,90,120)) +
-  scale_y_continuous(name ="Coral cover (%)", limits=c(0,85), breaks = c(0,20,40,60,80)) +
-  theme_classic() + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
-                          axis.text = element_text(size=10, colour="black"),
-                          axis.title = element_text(size=11, face="bold", colour="black"), legend.position = "none") 
-Fig_1A
-ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_1A.pdf", Fig_1A,width = 4, height = 3.5)
-
-
-# Plot with BAyesian Binomial model
-ggplot(coral_cover, aes(x=Depth, y=Cover)) +
-  # geom_point(aes(fill = Island, colour = Island),shape = 21, size = 0.8)  + 
-  geom_errorbar(aes(ymin = Mean - Cover_se, ymax = Mean + Cover_se), color="black", size=1, width=2) +
+  geom_errorbar(aes(ymin = Mean - Margin.error, ymax = Mean + Margin.error), color="black", size=1, width=2) +
   geom_line(aes(y=Post_Cover_Depth), size=1, linetype="dashed", alpha = 1) +
   geom_line(aes(y=Post_Cover_Depth + Post_Cover_sd_Depth), size=0.3, linetype="dotted",alpha = 0.8) +
   geom_line(aes(y=Post_Cover_Depth - Post_Cover_sd_Depth), size=0.3, linetype="dotted",alpha = 0.8) +
   scale_fill_manual(values = cols) + scale_color_manual(values = cols) +
   geom_point(aes(y=Mean), shape=21, fill="white", size=4) +  
   scale_x_continuous(name ="Depth (m)", limits=c(5,122), breaks = c(6,20,40,60,90,120)) +
-  scale_y_continuous(name ="Coral cover (%)", limits=c(0,85), breaks = c(0,20,40,60,80)) +
-  theme_classic() + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
-                          axis.text = element_text(size=10, colour="black"),
-                          axis.title = element_text(size=11, face="bold", colour="black"), legend.position = "none") 
-
-
-
-# Confidence Intervals
-Fig_1A <- ggplot(coral_cover, aes(x=Depth, y=Cover)) +
-  # geom_point(aes(fill = Island, colour = Island),shape = 21, size = 0.8)  + 
-  geom_errorbar(aes(ymin = Mean - Margin.error, ymax = Mean + Margin.error), color="black", size=1, width=2) +
-  geom_line(aes(y=Fit_mean), size=1, linetype="dashed", alpha = 1) +
-  geom_line(aes(y=upper2_mean), size=0.3, linetype="dotted",alpha = 0.8) +
-  geom_line(aes(y=lower2_mean), size=0.3, linetype="dotted",alpha = 0.8) +
-  scale_fill_manual(values = cols) + scale_color_manual(values = cols) +
-  geom_point(aes(y=Mean), shape=21, fill="white", size=4) +  
-  scale_x_continuous(name ="Depth (m)", limits=c(5,122), breaks = c(6,20,40,60,90,120)) +
-  scale_y_continuous(name ="Coral cover (%)", limits=c(-20,85), breaks = c(0,20,40,60,80)) +
+  scale_y_continuous(name ="Coral cover (%)", limits=c(-5,85), breaks = c(0,20,40,60,80)) +
   theme_classic() + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
                           axis.text = element_text(size=10, colour="black"),
                           axis.title = element_text(size=11, face="bold", colour="black"), legend.position = "none") 
 Fig_1A
+ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_1A.pdf", Fig_1A,width = 4, height = 3.5)
 
 
 
@@ -608,16 +524,19 @@ summary_island <- ddply(coral_cover, ~ Island + Depth, summarize, Island_cover=m
 coral_cover <- merge (coral_cover,summary_island)
 
 # Separate per islands if finally keep a supplementary figure 
+
+# Byesian has not interval confidences, it has sd of the model isntead
+
 Fig_SXX <- ggplot(coral_cover, aes(x=Depth, y=Cover)) + 
   facet_wrap(~Island, ncol = 4, scales = "free")  +
-  geom_line(aes(y=Fit_mean), size=0.5, linetype="dashed", alpha = 1) +
-  geom_line(aes(y=Fit_mean + Fit_sd), size=0.3, linetype="dotted",alpha = 0.8) +
-  geom_line(aes(y=Fit_mean - Fit_sd), size=0.3, linetype="dotted",alpha = 0.8) +
- # geom_errorbar(aes(ymin = Island_cover - Island_se, ymax = Island_cover + Island_se), color="black", size=0.5, width=0.5) +
+  geom_line(aes(y=Post_Cover_Depth), size=1, linetype="dashed", alpha = 1) +
+  geom_line(aes(y=Post_Cover_Depth + Post_Cover_sd_Depth), size=0.3, linetype="dotted",alpha = 0.8) +
+  geom_line(aes(y=Post_Cover_Depth - Post_Cover_sd_Depth), size=0.3, linetype="dotted",alpha = 0.8) +
+  # geom_errorbar(aes(ymin = Island_cover - Island_se, ymax = Island_cover + Island_se), color="black", size=0.5, width=0.5) +
   geom_point(aes(y=Island_cover), shape=21, size=1.5, fill = "grey")+
   geom_point(aes(y=Cover, shape = Island_Site), size=0.5, fill = "grey")+ # Variability of sites
   scale_x_continuous(name ="Depth (m)", limits=c(3,122), breaks = c(6,20,40,60,90,120)) +
-  scale_y_continuous(name ="Coral cover (%)", limits=c(0,85), breaks = c(0,20,40,60,80)) +
+  scale_y_continuous(name ="Coral cover (%)", limits=c(-5,85), breaks = c(0,20,40,60,80)) +
   theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
                       axis.text = element_text(size=10, colour="black"),
                       axis.title = element_text(size=11, face="bold", colour="black"), 
@@ -630,30 +549,10 @@ Fig_SXX
 ggsave ( "~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Fig_SCover_Island.pdf", Fig_SXX, width = 6, height = 5)
 
 
-# With the confidence intervals of points and model and the model
-
-Fig_SXX <- ggplot(coral_cover, aes(x=Depth, y=Cover)) + 
-  facet_wrap(~Island, ncol = 4, scales = "free")  +
-  geom_line(aes(y=Fit_mean), size=1, linetype="dashed", alpha = 1) +
-  geom_line(aes(y=upper2_mean), size=0.3, linetype="dotted",alpha = 0.8) +
-  geom_line(aes(y=lower2_mean), size=0.3, linetype="dotted",alpha = 0.8) +
-  # geom_errorbar(aes(ymin = Island_cover - Island_se, ymax = Island_cover + Island_se), color="black", size=0.5, width=0.5) +
-  geom_point(aes(y=Island_cover), shape=21, size=1.5, fill = "grey")+
-  geom_point(aes(y=Cover, shape = Island_Site), size=0.5, fill = "grey")+ # Variability of sites
-  scale_x_continuous(name ="Depth (m)", limits=c(3,122), breaks = c(6,20,40,60,90,120)) +
-  scale_y_continuous(name ="Coral cover (%)", limits=c(-20,85), breaks = c(0,20,40,60,80)) +
-  theme_bw()  + theme(plot.title = element_text(hjust=0.5, size=12, face="bold"),
-                      axis.text = element_text(size=10, colour="black"),
-                      axis.title = element_text(size=11, face="bold", colour="black"), 
-                      strip.text = element_text(size = 11,face="bold", colour="black"),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank(), legend.position = "none") 
-Fig_SXX
 
 
 
-# Supplementary Fig. 2 plot Stack Area plot
+# Stack Area plot
 # Relative contribution of each genera to visually see if it changes or not
 
 coral_data_main_Genus <- aggregate(Cover ~  Island + Island_Site + Depth + Coral_genus,  coral_data, sum)
@@ -689,7 +588,6 @@ Sup_Fig_X <- ggplot(coral_data_main, aes(x=Depth, y=Relative, fill=Coral_genus))
                           legend.position = "bottom") +
                           guides(fill = guide_legend(ncol = 8, title.hjust = 0.4))
 Sup_Fig_X
-ggsave("~/Documents/AAASea_Science/AAA_PhD_Thesis/Photoquadrats/PhD_Diversity_Depth/Figures/Sup_Fig_X.pdf",Sup_Fig_X ,height = 8, width = 15)
 
 
 
