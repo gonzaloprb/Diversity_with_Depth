@@ -403,7 +403,7 @@ theme_blank = function(base_size = 12, base_family = "") {
       plot.margin = unit(rep(1, 4), "lines")
       
     )
-}
+} 
 #### Necessary theme for NMDS ####
  
 # Plot NMDS
